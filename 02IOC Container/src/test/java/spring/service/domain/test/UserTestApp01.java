@@ -34,7 +34,7 @@ public class UserTestApp01 {
 		//		new ClassPathXmlApplicationContext("/config/userservice01.xml");
 
 		//2. Container 로 부터 각각의 id 를 갖는 instance Look Up 
-		//	- Dependency Lookup / Dependency Injection 확인...
+		//	- Dependency Lookup / Dependency Injection 확인... 
 		System.out.println("\n=======================");
 		User user01 = (User)factory.getBean("user01");
 		System.out.println(user01);
