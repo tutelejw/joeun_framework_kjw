@@ -1,0 +1,48 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE beans PUBLIC "-//SPRING//DTD BEAN//EN"
+  "http://www.springframework.org/dtd/spring-beans.dtd">
+  
+<!-- 
+PRD
+1. Spring Framework 5.2.5 사용.
+2. 아래 내용에 해당하는 diceservice.xml 기술.
+User.java  내용 붙여넣기.
+UserTestApp01.java 내용 붙여 넣기
+ -->
+
+<beans>
+    
+    <!-- user01: 디폴트 생성자 + setter 주입 -->
+    <bean id="user01" class="spring.service.domain.User">
+        <property name="userId" value="user01"/>
+        <property name="password" value="pass01"/>
+        <property name="age" value="21"/>
+    </bean>
+
+    <!-- user02: 디폴트 생성자 + 일부 setter -->
+    <bean id="user02" class="spring.service.domain.User">
+        <property name="userId" value="user02"/>
+        <property name="age" value="22"/>
+    </bean>
+
+    <!-- user03: 2개 인자 생성자 사용 -->
+    <bean id="user03" class="spring.service.domain.User">
+        <constructor-arg index="0" value="23"/>  <!-- age -->
+        <constructor-arg index="1" value="user03"/> <!-- userId -->
+    </bean>
+
+    <!-- user04: 3개 인자 생성자 사용 -->
+    <bean id="user04" class="spring.service.domain.User">
+        <constructor-arg index="0" value="24"/>      <!-- age -->
+        <constructor-arg index="1" value="pass04"/>  <!-- password -->
+        <constructor-arg index="2" value="user04"/>  <!-- userId -->
+    </bean>
+
+    <!-- user05: 디폴트 생성자 + setter 나중에 호출 -->
+    <bean id="user05" class="spring.service.domain.User">
+        <property name="age" value="25"/>
+        <property name="userId" value="user05"/>
+        <property name="password" value="pass05"/>
+    </bean>
+
+</beans>
