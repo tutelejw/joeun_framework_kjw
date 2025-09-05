@@ -1,0 +1,313 @@
+=================================================
+PRD : Product Requirement Document : 제품요구서 작성 : ???
+--------------------------------------------------
+-- 용어에 익숙해지자 
+: 구현요구사항을 AI 에 전달 하는 skill 을 익힘.
+: 요구사항을 정확히 지시 : Prompt Detail
+: 직접 지시가 아니라 AI 와 협업 
+   예> 이렇게 하려면 어떻게 해야해 ? 
+         : 난 알고 있지만. AI 가 생각하고 해결 할 수 있도록
+
+: Low-code / Prompt Engineering / Ai-assisted coding
+=================================================
+
+
+##### 
+
+0. MyBatis Framework 3.4.6 사용
+
+-  table 정보
+CREATE TABLE users ( 
+	user_id		VARCHAR2(12)	PRIMARY KEY,
+	user_name	VARCHAR2(15)	NOT NULL,
+	password 	VARCHAR2(10)	NOT NULL,
+	age 			NUMBER(3),
+	grade		NUMBER(3),
+	reg_date		DATE
+);
+
+- Java Domain Object
+package mybatis.service.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+public class User implements Serializable {
+
+	///Field
+    private String userId; 			// 회원 ID 
+    private String userName;		// 회원 이름 
+    private String password;     // 비밀번호 
+    private Integer age;    			// 나이 :: Integer wrapper class 사용 :: 추후 용도 확인  
+    private int grade;    				// 등급 :: int primitive 사용 :: :: 추후 용도 확인 
+    private Timestamp regDate	; // 가입일자 
+    //private Timestamp regDate	= new Timestamp(new Date().getTime()); // 가입일자
+    private boolean active; 
+    
+    ///Constructor
+    public User() {
+	}
+    public User (	String userId, String userName,String password, 
+    							Integer age, int grade ) {
+		this.userId = userId;
+		this.userName = userName;
+		this.password = password;
+		this.age = age;
+		this.grade = grade;
+	}    
+
+	///Method (getter/setter)
+	public String getUserId(){
+		return this.userId;
+	}
+	public void setUserId( String userId ){
+	   this.userId= userId;
+	}
+	public String getPassword(){
+	   return this.password;
+	}
+	public void setPassword( String password ){
+	   this.password= password;
+	}
+	public Integer getAge() {
+		return age;
+	}
+	public void setAge(Integer age) {
+		//System.out.println("age : "+age);
+		this.age = age;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public java.sql.Timestamp getRegDate() {
+		return regDate;
+	}
+	public void setRegDate(java.sql.Timestamp regDate) {
+		this.regDate = regDate;
+	}
+	public int getGrade() {
+		return grade;
+	}
+	public void setGrade(int grade) {
+		//System.out.println("grade : "+grade);
+		this.grade = grade;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+	public boolean isActive() {
+		return active;
+	}
+	@Override
+	public String toString() {
+		return "User [userid=" + userId + ", userName=" + userName + ", password="
+				+ password + ", age=" + age + ", grade=" + grade+ ", active=" + active
+				+ ", regDate=" + regDate + "]";
+	}
+}//end of class
+
+
+1.  myabtis-config01.xml  구성
+
+- jdbc.propertis 내용 읽고
+driver=oracle.jdbc.driver.OracleDriver
+url=jdbc:oracle:thin:@127.0.0.1:1521:xe
+username=ibatis
+password=ibatis
+
+- DataSource 구성
+
+-  SQL 정의 된 sql/UserMapper01.xml  포함.
+
+
+2.  UserMappler.01.xml 구성
+
+- select   : 모든 유저 정보
+: id 는 getUserList 
+:  결과 :  User 바인딩
+
+- select  : userId 에 해당하는 유저
+:  id 는 getUser
+: 파라메터는 String
+: 결과 :  User 바인딩
+
+- select : userId 와 password 에 해당하는 유저이름
+- id 는 findUserId
+- 파라메터는 User 객체
+- 결과 : 유저이름 Sring 
+
+- select : age 에 해당하는  유저이름
+- id 는 getUserListAge
+- 파라메터는 User 객체
+- 결과 : 유저이름 Sring 
+
+
+3. myabtis-config01.xml  / UserMappler.01.xml  
+    테스트 할 수 있는 MyBatisTestApp01.java 
+    Application 구현
+
+
+
+############################
+## mybatis-config01.xml
+
+<!-- resources/mybatis-config01.xml -->
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+  <!-- properties import -->
+  <properties resource="jdbc.properties"/>
+
+  <environments default="development">
+    <environment id="development">
+      <transactionManager type="JDBC"/>
+      <dataSource type="POOLED">
+        <property name="driver" value="${driver}"/>
+        <property name="url" value="${url}"/>
+        <property name="username" value="${username}"/>
+        <property name="password" value="${password}"/>
+      </dataSource>
+    </environment>
+  </environments>
+
+  <mappers>
+    <mapper resource="sql/UserMapper01.xml"/>
+  </mappers>
+</configuration>
+
+
+
+############################
+## jdbc.properties (resources 디렉토리):
+
+driver=oracle.jdbc.driver.OracleDriver
+url=jdbc:oracle:thin:@127.0.0.1:1521:xe
+username=ibatis
+password=ibatis
+
+
+############################
+## jUserMapper01.xml 구성
+
+<!-- resources/sql/UserMapper01.xml -->
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="mybatis.service.mapper.UserMapper01">
+
+  <!-- 모든 유저 정보 조회 -->
+  <select id="getUserList" resultType="mybatis.service.domain.User">
+    SELECT 
+      user_id      AS userId,
+      user_name    AS userName,
+      password,
+      age,
+      grade,
+      reg_date     AS regDate
+    FROM users
+  </select>
+
+  <!-- userId로 유저 1명 조회 -->
+  <select id="getUser" parameterType="string" resultType="mybatis.service.domain.User">
+    SELECT 
+      user_id      AS userId,
+      user_name    AS userName,
+      password,
+      age,
+      grade,
+      reg_date     AS regDate
+    FROM users
+    WHERE user_id = #{userId}
+  </select>
+
+  <!-- userId, password로 유저 이름 조회 -->
+  <select id="findUserId" parameterType="mybatis.service.domain.User" resultType="string">
+    SELECT user_name
+    FROM users
+    WHERE user_id = #{userId} AND password = #{password}
+  </select>
+
+  <!-- age로 유저 이름(들) 조회 -->
+  <select id="getUserListAge" parameterType="mybatis.service.domain.User" resultType="string">
+    SELECT user_name
+    FROM users
+    WHERE age = #{age}
+  </select>
+</mapper>
+
+
+############################
+##  MyBatisTestApp01.java
+
+package mybatis.service.test;
+
+import java.io.InputStream;
+import java.util.List;
+
+import mybatis.service.domain.User;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+public class MyBatisTestApp01 {
+    public static void main(String[] args) throws Exception {
+        // 1. mybatis-config01.xml 로딩
+        String resource = "mybatis-config01.xml";
+        InputStream inputStream = Resources.getResourceAsStream(resource);
+        SqlSessionFactory sqlSessionFactory = new SqlSessionFactoryBuilder().build(inputStream);
+
+        try (SqlSession sqlSession = sqlSessionFactory.openSession()) {
+            // 2. getUserList
+            List<User> userList = sqlSession.selectList("mybatis.service.mapper.UserMapper01.getUserList");
+            System.out.println("전체 유저:");
+            for (User u : userList) {
+                System.out.println(u);
+            }
+
+            // 3. getUser
+            String searchId = "hong";
+            User user = sqlSession.selectOne("mybatis.service.mapper.UserMapper01.getUser", searchId);
+            System.out.println("userId = " + searchId + " : " + user);
+
+            // 4. findUserId
+            User paramUser = new User();
+            paramUser.setUserId("hong");
+            paramUser.setPassword("1234");
+            String userName = sqlSession.selectOne("mybatis.service.mapper.UserMapper01.findUserId", paramUser);
+            System.out.println("findUserId(hong, 1234) => userName = " + userName);
+
+            // 5. getUserListAge
+            paramUser = new User();
+            paramUser.setAge(30);
+            List<String> nameList = sqlSession.selectList("mybatis.service.mapper.UserMapper01.getUserListAge", paramUser);
+            System.out.println("나이 30 유저 이름 목록:");
+            for (String name : nameList) {
+                System.out.println(name);
+            }
+        }
+    }
+}
+
+
+############################
+## 구조 안내
+
+src/
+ └── main/
+      ├── java/
+      │    └── mybatis/service/domain/User.java
+      │    └── mybatis/service/test/MyBatisTestApp01.java
+      └── resources/
+            ├── jdbc.properties
+            ├── mybatis-config01.xml
+            └── sql/UserMapper01.xml

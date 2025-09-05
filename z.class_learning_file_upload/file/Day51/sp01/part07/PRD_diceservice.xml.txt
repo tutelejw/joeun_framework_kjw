@@ -1,0 +1,212 @@
+=================================================
+PRD : Product Requirement Document : 제품요구서 작성 : ???
+--------------------------------------------------
+-- 용어에 익숙해지자 
+: 구현요구사항을 AI 에 전달 하는 skill 을 익힘.
+: 요구사항을 정확히 지시 : Prompt Detail
+: 직접 지시가 아니라 AI 와 협업 
+   예> 이렇게 하려면 어떻게 해야해 ? 
+         : 난 알고 있지만. AI 가 생각하고 해결 할 수 있도록
+
+: Low-code / Prompt Engineering / Ai-assisted coding
+=================================================
+
+
+##### 
+0. Player02 / Dice / DiceAImpl / DiceBImpl / DiceCImpl  참조
+
+package spring.service.dice.play;
+
+import spring.service.dice.Dice;
+
+public class Player02 {
+	///Field
+	private Dice dice;
+	private int totalValue;
+	
+	///Constructor Method
+	public Player02() {
+		System.out.println("::"+getClass().getName()+" 디폴트 생성자....");
+	}
+	public Player02(Dice dice) {
+		System.out.println("::"+getClass().getName()+" Dice 인스턴스를 인자로 받는 생성자....");
+		this.dice = dice;
+	}
+	
+	///Method (getter/setter)
+	public Dice getDice() {
+		return dice;
+	}
+	public void setDice(Dice dice) {
+		System.out.println("::"+getClass().getName()+".setDice()...");
+		this.dice = dice;
+	}
+	public int getTotalValue() {
+		return totalValue;
+	}
+	public void setTotalValue(int totalValue) {
+		this.totalValue = totalValue;
+	}
+	
+	//==> count 만큼 주사위를 굴려서 합을 후하는 행위
+	public void playDice(int count){
+		System.out.println("==>"+getClass().getName()+".playDice() start....");
+
+		for (int i = 0; i < count; i++) {
+			dice.selectedNumber();
+			System.out.println("::[ "+dice.getClass().getName()+" ] 의 선택된수 : "+dice.getValue());
+			totalValue += dice.getValue(); 
+		}
+		
+		System.out.println("==>"+getClass().getName()+".playDice() end....");
+	}
+}//end of class
+
+-----------------------------------------------
+package spring.service.dice;
+
+/*
+ *	FileName : Dice.java
+ *	ㅇ Contract ( 계약 ? : 기능에 대한 규약) 를 갖는 interface declaration
+ *  ㅇ Polymorphism //==> interface 기반 Programming
+ */
+public interface Dice {
+	
+	///Method
+	//==> value 를 return 하는 Method declaration
+	public int getValue();
+	
+	//==> 주사위를 던저 선택되는 숫자를 생산하는 Method declaration
+	public void selectedNumber();
+	
+}//end of interface
+------------------------------------------------------
+package spring.service.dice.impl;
+
+import java.util.Random;
+
+import spring.service.dice.Dice;
+
+/*
+ * FileName : DiceAImpl.java
+ * ㅇ Dice interface 구현 Bean :: Realization Relation  
+ * ㅇ 주사위 Object Modeling
+ * ㅇ 1 ~ 6 수를 랜덤하게  리턴
+ * ㅇ Bean 규약 준함 ( POJO :: Plain Old Java Object )
+ */
+public class DiceAImpl implements Dice{
+	
+	///Field
+	private int value;
+
+	///Constructor
+	public DiceA() {
+		System.out.println("::"+getClass().getName()+" 생성자....");
+	}
+
+	//Method (getter/setter)
+	public int getValue() {
+		return value;
+	}
+	public void setValue(int value) {
+		this.value = value;
+	}
+	
+	//==> 주사위를 던저 무작위로 숫자 생산
+	public void selectedNumber(){
+		value = new Random().nextInt(6) + 1;
+	}
+	
+}//end of class
+--------------------------------------------------------------
+package spring.service.dice.impl;
+
+import java.util.Random;
+
+import spring.service.dice.Dice;
+
+/*
+ * FileName : DiceBImpl.java
+ * ㅇ Dice interface 구현 Bean :: Realization Relation  
+ * ㅇ 주사위 Object Modeling
+ * ㅇ 1 ~ 6 수를 랜덤하게  리턴
+ * ㅇ Bean 규약 준함 ( POJO :: Plain Old Java Object )
+ */
+public class DiceBImpl  implements Dice{
+	
+	///Field
+	private int value;
+
+	///Constructor
+	public DiceB() {
+		System.out.println("::"+getClass().getName()+" 생성자....");
+	}
+
+	//Method (getter/setter)
+	public int getValue() {
+		return value;
+	}
+	public void setValue(int value) {
+		this.value = value;
+	}
+	
+	//==> 주사위를 던저 무작위로 숫자 생산
+	public void selectedNumber(){
+		value = new Random().nextInt(6) + 1;
+	}
+	
+}//end of class
+
+------------------------------------------------------------
+package spring.service.dice.impl;
+
+import java.util.Random;
+
+import spring.service.dice.Dice;
+
+/*
+ * FileName : DiceCImpl.java
+ * ㅇ Dice interface 구현 class ( Realization Relation ) 
+ * ㅇ 주사위 Object Modeling
+ * ㅇ 1 ~ 6 수를 랜덤하게  리턴
+ * ㅇ Bean 규약을 준함 ( POJO :: Plain Old Java Object )
+ */
+public class DiceCImpl implements Dice{
+
+
+-----------------------------------------------------------------
+
+1. Spring Framework 5.2.5 사용.
+2. 아래 내용에 해당하는 diceservice.xml 기술.
+
+- DiceAImpl / DiceBImpl /DiceCImpl  생성
+- Player02 생성시 DiceAimpl 인스턴스 세터 인젝션
+- Player02 생성시 DiceBimpl 인스턴스 컨스트럭터 인젝션
+
+#####
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xsi:schemaLocation="
+         http://www.springframework.org/schema/beans
+         http://www.springframework.org/schema/beans/spring-beans.xsd">
+
+    <!-- Dice 구현체 Bean 등록 -->
+    <bean id="diceA" class="spring.service.dice.impl.DiceAImpl"/>
+    <bean id="diceB" class="spring.service.dice.impl.DiceBImpl"/>
+    <bean id="diceC" class="spring.service.dice.impl.DiceCImpl"/>
+
+    <!-- Player02 : setter 인젝션 (DiceAImpl 주입) -->
+    <bean id="playerWithSetter" class="spring.service.dice.play.Player02">
+        <property name="dice" ref="diceA"/>
+    </bean>
+
+    <!-- Player02 : 생성자 인젝션 (DiceBImpl 주입) -->
+    <bean id="playerWithConstructor" class="spring.service.dice.play.Player02">
+        <constructor-arg ref="diceB"/>
+    </bean>
+
+</beans>
