@@ -1,0 +1,49 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+
+    
+    <!-- properties 파일 로딩 -->
+    <properties resource="sql/jdbc.properties" />
+    <!-- ✅ alias 등록 -->
+    <typeAliases>
+        <typeAlias alias="user" type="mybatis.service.domain.User"/>
+    </typeAliases>
+    
+    <!-- 환경 설정 -->
+    <environments default="development">
+        <environment id="development">
+            <transactionManager type="JDBC" />
+            <dataSource type="POOLED">
+                <property name="driver" value="${driver}" />
+                <property name="url" value="${url}" />
+                <property name="username" value="${username}" />
+                <property name="password" value="${password}" />
+            </dataSource>
+        </environment>
+    </environments>
+
+    <!-- Mapper 파일 등록 -->
+    <mappers>
+<!-- 	
+	<mapper resource="sql/UserMapper01.xml" />
+    <mapper resource="sql/UserMapper02.xml"/> 
+    <mapper resource="sql/UserMapper03.xml"/>
+    <mapper resource="sql/UserMapper04.xml"/>
+   <mapper resource="sql/UserMapper05.xml"/>
+    <mapper resource="sql/UserMapper06.xml"/>
+
+	<mapper resource="sql/UserMapper07.xml"/>
+-->
+
+	<mapper resource="sql/UserMapper08.xml"/>
+<!--
+	<mapper resource="sql/UserMapper09.xml"/>
+	<mapper resource="sql/UserMapper10.xml"/>
+-->
+    </mappers>
+</configuration>

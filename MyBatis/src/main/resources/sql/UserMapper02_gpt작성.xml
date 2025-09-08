@@ -1,0 +1,39 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper02">
+
+    <!-- 1. # 대입자 (PreparedStatement 방식) -->
+    <select id="getUserList01" resultType="mybatis.service.domain.User" parameterType="string">
+        SELECT user_id AS userId,
+               user_name AS userName,
+               password,
+               age,
+               grade,
+               reg_date AS regDate
+        FROM users
+        WHERE user_id LIKE #{value}
+    </select>
+
+    <!-- 2. $ 대입자 (SQL 문자열 삽입, SQL 인젝션 주의) -->
+    <select id="getUserList02" resultType="mybatis.service.domain.User" parameterType="string">
+        SELECT user_id AS userId,
+               user_name AS userName,
+               password,
+               age,
+               grade,
+               reg_date AS regDate
+        FROM users
+        WHERE user_id LIKE '%${value}%'
+    </select>
+
+    <!-- 3. userId + password로 user_name 조회 -->
+    <select id="findUser" resultType="string" parameterType="string">
+        SELECT user_name
+        FROM users
+        WHERE ${value}
+    </select>
+
+</mapper>
