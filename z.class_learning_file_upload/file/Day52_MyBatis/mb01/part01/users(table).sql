@@ -1,3 +1,20 @@
+
+sqlplus ibatis/ibatis
+
+-- 컬럼 출력 폭 지정
+COLUMN user_id     FORMAT A12     HEADING "User ID"
+COLUMN user_name   FORMAT A15     HEADING "User Name"
+COLUMN password    FORMAT A10     HEADING "Password"
+COLUMN age         FORMAT 999     HEADING "Age"
+COLUMN grade       FORMAT 999     HEADING "Grade"
+COLUMN reg_date    FORMAT A19     HEADING "Registration Date"
+
+-- 테이블 데이터 조회
+SELECT * FROM users;
+
+
+
+
 ==========================
  회원  table 생성 및 data insert
 ==========================
