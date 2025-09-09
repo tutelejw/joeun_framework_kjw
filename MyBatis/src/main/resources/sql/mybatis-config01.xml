@@ -12,6 +12,7 @@
     <!-- ✅ alias 등록 -->
     <typeAliases>
         <typeAlias alias="user" type="mybatis.service.domain.User"/>
+        <typeAlias alias="search" type="mybatis.service.domain.Search"/>
     </typeAliases>
     
     <!-- 환경 설정 -->

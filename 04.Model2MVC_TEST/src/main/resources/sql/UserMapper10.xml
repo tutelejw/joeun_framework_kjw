@@ -1,0 +1,95 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+               "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper10">
+
+  <resultMap id="userSelectMap" type="User">
+    <id     property="userId"   column="user_id"   jdbcType="VARCHAR"/>
+    <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+    <result property="password" column="password"  jdbcType="VARCHAR"/>
+    <result property="role"     column="role"      jdbcType="VARCHAR"/>
+    <result property="ssn"      column="ssn"       jdbcType="VARCHAR"/>
+    <result property="phone"    column="cell_phone" jdbcType="VARCHAR"/>
+    <result property="addr"     column="addr"      jdbcType="VARCHAR"/>
+    <result property="email"    column="email"     jdbcType="VARCHAR"/>
+    <result property="regDate"  column="reg_date"  jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <sql id="select-users">
+    select user_id, user_name, password, role, ssn, cell_phone as phone, addr, email, reg_date
+    from users
+  </sql>
+
+  <sql id="orderby-user-desc">
+    order by user_id desc
+  </sql>
+
+ <insert id="addUser" parameterType="user">
+  insert into users (
+    user_id,
+    user_name,
+    password,
+    role,
+    ssn,
+    cell_phone,
+    addr,
+    email,
+    reg_date
+  )
+  values (
+    #{userId, jdbcType=VARCHAR},
+    #{userName, jdbcType=VARCHAR},
+    #{password, jdbcType=VARCHAR},
+    #{role, jdbcType=VARCHAR},
+    #{ssn, jdbcType=VARCHAR},
+    #{phone, jdbcType=VARCHAR},
+    #{addr, jdbcType=VARCHAR},
+    #{email, jdbcType=VARCHAR},
+    #{regDate, jdbcType=DATE}
+  )
+</insert>
+
+
+  <select id="getUser" resultMap="userSelectMap" parameterType="string">
+    <include refid="select-users"/>
+    where user_id = #{userId, jdbcType=VARCHAR}
+    <include refid="orderby-user-desc"/>
+  </select>
+
+  <update id="updateUser" parameterType="User">
+    update users
+      set user_name = #{userName, jdbcType=VARCHAR},
+          password  = #{password, jdbcType=VARCHAR},
+          role      = #{role, jdbcType=VARCHAR},
+          ssn       = #{ssn, jdbcType=VARCHAR},
+          cell_phone= #{phone, jdbcType=VARCHAR},
+          addr      = #{addr, jdbcType=VARCHAR},
+          email     = #{email, jdbcType=VARCHAR},
+          reg_date  = #{regDate, jdbcType=TIMESTAMP}
+    where user_id = #{userId, jdbcType=VARCHAR}
+  </update>
+
+  <delete id="removeUser" parameterType="string">
+    delete from users
+    where user_id = #{userId, jdbcType=VARCHAR}
+  </delete>
+
+  <select id="getUserList" resultMap="userSelectMap" parameterType="Search">
+    <include refid="select-users"/>
+    <where>
+      <if test="searchCondition != null and searchCondition != ''">
+        <choose>
+          <when test="searchCondition == 'userId'">
+            user_id = #{value, jdbcType=VARCHAR}
+          </when>
+          <when test="searchCondition == 'userName'">
+            user_name = #{value, jdbcType=VARCHAR}
+          </when>
+        </choose>
+      </if>
+    </where>
+    <include refid="orderby-user-desc"/>
+  </select>
+</mapper>
