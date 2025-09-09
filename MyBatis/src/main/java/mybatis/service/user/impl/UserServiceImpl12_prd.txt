@@ -1,0 +1,177 @@
+아래 정보를 참고하여 MyBatis 기반 DAO 구현체인 UserDaoImpl12.java를 작성해줘.
+
+조건:
+- 패키지: mybatis.service.user.impl
+- UserDao 타입의 필드를 private UserDao userDao; 로 선언하여 내부 위임 구조 사용
+- userDao는 setter 주입(setUserDao 메서드)으로 받음
+- 모든 메서드는 호출 시 System.out.println 으로 getClass().getName() 메서드명 로그 출력
+- 각 메서드는 userDao 필드에 위임하여 실제 DB 작업 수행
+- 모든 메서드는 Exception throws 선언
+- UserDao 인터페이스 메서드 전부 구현
+- 메서드: addUser(User), getUser(String), updateUser(User), removeUser(String), getUserList(Search)
+- User, Search 도메인 객체 참고
+- try-catch 문 생략 (교육용)
+
+필요 시 UserDao 인터페이스와 도메인 객체 정의도 포함해줘.
+
+
+package mybatis.service.user;
+
+import mybatis.service.domain.User;
+import mybatis.service.domain.Search;
+import java.util.List;
+
+public interface UserDao {
+
+    public int addUser(User user) throws Exception;
+
+    public User getUser(String userId) throws Exception;
+
+    public int updateUser(User user) throws Exception;
+
+    public int removeUser(String userId) throws Exception;
+
+    public List<User> getUserList(Search search) throws Exception;
+
+}
+
+
+package mybatis.service.user;
+
+import java.util.List;
+import mybatis.service.domain.User;
+import mybatis.service.domain.Search;
+
+public interface UserService {
+
+    public int addUser(User user) throws Exception;
+
+    public User getUser(String userId) throws Exception;
+
+    public int updateUser(User user) throws Exception;
+
+    public int removeUser(String userId) throws Exception;
+
+    public List<User> getUserList(Search search) throws Exception;
+
+}
+
+
+
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper10">
+
+  <!-- 5. SQL 조각 정의 -->
+  <sql id="select-users">
+    SELECT
+      user_id,
+      user_name,
+      password,
+      age,
+      grade,
+      reg_date
+    FROM users
+  </sql>
+
+  <sql id="orderby-user-desc">
+    ORDER BY user_id DESC
+  </sql>
+
+  <!-- ResultMap 정의 -->
+  <resultMap id="userResultMap" type="mybatis.service.domain.User">
+    <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+    <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+    <result property="password" column="password" jdbcType="VARCHAR"/>
+    <result property="age" column="age" jdbcType="INTEGER"/>
+    <result property="grade" column="grade" jdbcType="INTEGER"/>
+    <result property="regDate" column="reg_date" jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <!-- 1. addUser -->
+  <insert id="addUser" parameterType="mybatis.service.domain.User">
+    INSERT INTO users (
+      user_id,
+      user_name,
+      password,
+      age,
+      grade,
+      reg_date
+    ) VALUES (
+      #{userId, jdbcType=VARCHAR},
+      #{userName, jdbcType=VARCHAR},
+      #{password, jdbcType=VARCHAR},
+      #{age, jdbcType=INTEGER},
+      <if test="grade != 0">
+        #{grade, jdbcType=INTEGER},
+      </if>
+      <if test="grade == 0">
+        NULL,
+      </if>
+      #{regDate, jdbcType=TIMESTAMP}
+    )
+  </insert>
+
+  <!-- 2. getUser -->
+  <select id="getUser" parameterType="String" resultMap="userResultMap">
+    <include refid="select-users"/>
+    WHERE user_id = #{userId, jdbcType=VARCHAR}
+  </select>
+
+  <!-- 3. updateUser -->
+  <update id="updateUser" parameterType="mybatis.service.domain.User">
+    UPDATE users
+    <set>
+ <if test="userName != null">
+        user_name = #{userName, jdbcType=VARCHAR},
+      </if>
+<if test="userName != null">
+
+        password = #{password, jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        age = #{age, jdbcType=INTEGER},
+      </if>
+      <if test="grade != 0">
+        grade = #{grade, jdbcType=INTEGER},
+      </if>
+      <if test="grade == 0">
+        grade = NULL,
+      </if>
+    </set>
+    WHERE user_id = #{userId, jdbcType=VARCHAR}
+  </update>
+
+  <!-- 4. removeUser -->
+  <delete id="removeUser" parameterType="String">
+    DELETE FROM users
+    WHERE user_id = #{userId, jdbcType=VARCHAR}
+  </delete>
+
+  <!-- 6. getUserList01 -->
+  <select id="getUserList" parameterType="mybatis.service.domain.Search" resultMap="userResultMap">
+    <include refid="select-users"/>
+    <where>
+      <choose>
+        <when test="searchCondition == 'usrId' and userId != null and userId.size() > 0">
+          user_id IN
+          <foreach collection="userId" item="value" open="(" separator="," close=")">
+            #{value, jdbcType=VARCHAR}
+          </foreach>
+        </when>
+        <when test="searchCondition == 'usrName' and userName != null and userName[0] != null">
+          user_name IN
+          <foreach collection="userName" item="value" open="(" separator="," close=")">
+            #{value, jdbcType=VARCHAR}
+          </foreach>
+        </when>
+      </choose>
+    </where>
+    <include refid="orderby-user-desc"/>
+  </select>
+
+</mapper>

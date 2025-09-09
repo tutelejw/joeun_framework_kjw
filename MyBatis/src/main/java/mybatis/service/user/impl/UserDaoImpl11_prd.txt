@@ -1,0 +1,169 @@
+
+아래의 UserDao, UserService, mapper 참고해서 UserDaoImpl11.java 작성해줘
+UserMapper10.xml을 이용해줘
+package mybatis.service.user.impl; 로 해줘
+MyBatis 기반 Mapper (UserMapper10.xml) 활용
+UserDaoImpl11: SqlSession 주입 받아 SQL 매핑 실행, 메서드별 DB 작업 수행
+디버깅 목적의 System.out.println 로그 포함 (생성자, setter, 주요 메서드 호출 시)
+모든 메서드는 Exception throws 선언 (교육용으로 try-catch 생략)
+
+package mybatis.service.user;
+
+import mybatis.service.domain.User;
+import mybatis.service.domain.Search;
+import java.util.List;
+
+public interface UserDao {
+
+    public int addUser(User user) throws Exception;
+
+    public User getUser(String userId) throws Exception;
+
+    public int updateUser(User user) throws Exception;
+
+    public int removeUser(String userId) throws Exception;
+
+    public List<User> getUserList(Search search) throws Exception;
+
+}
+
+
+package mybatis.service.user;
+
+import java.util.List;
+import mybatis.service.domain.User;
+import mybatis.service.domain.Search;
+
+public interface UserService {
+
+    public int addUser(User user) throws Exception;
+
+    public User getUser(String userId) throws Exception;
+
+    public int updateUser(User user) throws Exception;
+
+    public int removeUser(String userId) throws Exception;
+
+    public List<User> getUserList(Search search) throws Exception;
+
+}
+
+
+
+
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper10">
+
+  <!-- 5. SQL 조각 정의 -->
+  <sql id="select-users">
+    SELECT
+      user_id,
+      user_name,
+      password,
+      age,
+      grade,
+      reg_date
+    FROM users
+  </sql>
+
+  <sql id="orderby-user-desc">
+    ORDER BY user_id DESC
+  </sql>
+
+  <!-- ResultMap 정의 -->
+  <resultMap id="userResultMap" type="mybatis.service.domain.User">
+    <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+    <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+    <result property="password" column="password" jdbcType="VARCHAR"/>
+    <result property="age" column="age" jdbcType="INTEGER"/>
+    <result property="grade" column="grade" jdbcType="INTEGER"/>
+    <result property="regDate" column="reg_date" jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <!-- 1. addUser -->
+  <insert id="addUser" parameterType="mybatis.service.domain.User">
+    INSERT INTO users (
+      user_id,
+      user_name,
+      password,
+      age,
+      grade,
+      reg_date
+    ) VALUES (
+      #{userId, jdbcType=VARCHAR},
+      #{userName, jdbcType=VARCHAR},
+      #{password, jdbcType=VARCHAR},
+      #{age, jdbcType=INTEGER},
+      <if test="grade != 0">
+        #{grade, jdbcType=INTEGER},
+      </if>
+      <if test="grade == 0">
+        NULL,
+      </if>
+      #{regDate, jdbcType=TIMESTAMP}
+    )
+  </insert>
+
+  <!-- 2. getUser -->
+  <select id="getUser" parameterType="String" resultMap="userResultMap">
+    <include refid="select-users"/>
+    WHERE user_id = #{userId, jdbcType=VARCHAR}
+  </select>
+
+  <!-- 3. updateUser -->
+  <update id="updateUser" parameterType="mybatis.service.domain.User">
+    UPDATE users
+    <set>
+ <if test="userName != null">
+        user_name = #{userName, jdbcType=VARCHAR},
+      </if>
+<if test="userName != null">
+
+        password = #{password, jdbcType=VARCHAR},
+      </if>
+      <if test="age != null">
+        age = #{age, jdbcType=INTEGER},
+      </if>
+      <if test="grade != 0">
+        grade = #{grade, jdbcType=INTEGER},
+      </if>
+      <if test="grade == 0">
+        grade = NULL,
+      </if>
+    </set>
+    WHERE user_id = #{userId, jdbcType=VARCHAR}
+  </update>
+
+  <!-- 4. removeUser -->
+  <delete id="removeUser" parameterType="String">
+    DELETE FROM users
+    WHERE user_id = #{userId, jdbcType=VARCHAR}
+  </delete>
+
+  <!-- 6. getUserList01 -->
+  <select id="getUserList" parameterType="mybatis.service.domain.Search" resultMap="userResultMap">
+    <include refid="select-users"/>
+    <where>
+      <choose>
+        <when test="searchCondition == 'usrId' and userId != null and userId.size() > 0">
+          user_id IN
+          <foreach collection="userId" item="value" open="(" separator="," close=")">
+            #{value, jdbcType=VARCHAR}
+          </foreach>
+        </when>
+        <when test="searchCondition == 'usrName' and userName != null and userName[0] != null">
+          user_name IN
+          <foreach collection="userName" item="value" open="(" separator="," close=")">
+            #{value, jdbcType=VARCHAR}
+          </foreach>
+        </when>
+      </choose>
+    </where>
+    <include refid="orderby-user-desc"/>
+  </select>
+
+</mapper>

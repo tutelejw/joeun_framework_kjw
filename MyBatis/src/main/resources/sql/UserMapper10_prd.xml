@@ -1,0 +1,196 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper10">
+
+<!-- 	MyBatis에서 사용할 수 있는 UserMapper10.xml 매핑 파일 작성하려고해
+테이블 생성 구문으로 매핑구문에서 사용할 resultset과 바이딩될 비지니스 객체 정의해줘, jdbcType 명시해줘
+Search.java 와 User.java 도메인객체 참고해줘
+mapper에서 사용되는 쿼리는 필드명을 모두 명시해주고 select 는 user_id order by desc 로 정렬해줘
+item 의 값은 value로 통일해줘
+select 하게 되면 order by로 정렬 user_id 해줘
+
+1. addUser insert 매핑 dynamic sql 구문 작성
+- insert 시 grade 필드는 0이면 NULL로 처리, 0이 아니면 값으로 바인딩
+
+
+MyBatis에서 사용할 UserMapper10.xml 매핑 파일 작성해줘.
+
+- 테이블 생성 구문 참고: users (user_id, user_name, password, age, grade, reg_date)
+- User.java 도메인객체 기준 (field, 타입, jdbcType 명시)
+- item 값은 모두 'value'로 통일
+- 필요한 jdbcType 명시해줘
+- select 쿼리는 모든 필드 명시, user_id 기준 내림차순(order by user_id DESC) 정렬
+
+1. addUser insert 매핑 작성
+ : insert 시 grade 필드는 0이면 NULL로 처리, 0이 아니면 값으로 바인딩
+
+
+2. getUser select 매핑 작성해줘
+user_id를 기준으로 사용자 정보를 조회
+
+3. updateUser update 매핑 작성해줘
+조건 userName != null 지정 명시한것 사용해줘
+조건 password != null 지정 명시한것 사용해줘
+grade 필드는 0이면 NULL로 처리, 0이 아니면 값으로 바인딩(if문으로)
+user_id를 기준으로 사용자 정보를 업데이트
+
+4. removeUser delete 매핑 작성해줘 
+user_id를 기준으로 사용자 정보를 삭제
+
+5. <sql> 태그를 이용해 select-users와 orderby-user-desc를 정의 해줘
+users 테이블에서 user_id, user_name, password, age, grade, reg_date 필드를 조회하는 <sql id="select-users">
+user_id를 내림차순으로 정렬하는 <sql id="orderby-user-desc">
+
+
+
+6. getUserList 쿼리를 작성해줘. 이 쿼리는 Search 객체를 파라미터로 받아야 해.
+SELECT와 ORDER BY는 **<include>**를 사용해줘.
+**<where>**와 **<choose>**를 활용한 동적 SQL로 조건을 추가해줘.
+searchCondition이 **'usrId'**일 경우 userId 컬렉션으로, **'usrName'**일 경우 userName 배열로 IN 절을 생성해줘.
+**<foreach>**의 item 값은 **value**로 통일하고, **jdbcType**도 명시해줘
+
+
+CREATE TABLE users ( 
+	user_id		VARCHAR2(12)	PRIMARY KEY,
+	user_name	VARCHAR2(15)	NOT NULL,
+	password 	VARCHAR2(10)	NOT NULL,
+	age 			NUMBER(3),
+	grade		NUMBER(3),
+	reg_date		DATE
+);
+
+
+package mybatis.service.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+/*
+ * FileName : User.java  
+ * ㅇ User 의 정보를 갖는 Value Object (도메인객체,비지니스객체)
+ * ㅇ USERS TABLE 의 1개의 ROW 의 정보를 갖는다.  
+*/ 
+public class User implements Serializable {
+
+	///Field
+    private String userId; 			// 회원 ID 
+    private String userName;		// 회원 이름 
+    private String password;     // 비밀번호 
+    private Integer age;    			// 나이 :: Integer wrapper class 사용 :: 추후 용도 확인  
+    private int grade;    				// 등급 :: int primitive 사용 :: :: 추후 용도 확인 
+    private Timestamp regDate	; // 가입일자 
+    //private Timestamp regDate	= new Timestamp(new Date().getTime()); // 가입일자
+    private boolean active; 
+    
+    ///Constructor
+    public User() {
+	}
+    public User (	String userId, String userName,String password, 
+    							Integer age, int grade ) {
+		this.userId = userId;
+		this.userName = userName;
+		this.password = password;
+		this.age = age;
+		this.grade = grade;
+	}    
+
+	///Method (getter/setter)
+	public String getUserId(){
+		return this.userId;
+	}
+	public void setUserId( String userId ){
+	   this.userId= userId;
+	}
+	public String getPassword(){
+	   return this.password;
+	}
+	public void setPassword( String password ){
+	   this.password= password;
+	}
+	public Integer getAge() {
+		return age;
+	}
+	public void setAge(Integer age) {
+		System.out.println("setAge  호출 확인 null 일때 age : "+age);
+		this.age = age;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public java.sql.Timestamp getRegDate() {
+		return regDate;
+	}
+	public void setRegDate(java.sql.Timestamp regDate) {
+		this.regDate = regDate;
+	}
+	public int getGrade() {
+		return grade;
+	}
+	public void setGrade(int grade) {
+		//System.out.println("grade : "+grade);
+		this.grade = grade;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+	public boolean isActive() {
+		return active;
+	}
+	@Override
+	public String toString() {
+		return "User [userid=" + userId + ", userName=" + userName + ", password="
+				+ password + ", age=" + age + ", grade=" + grade+ ", active=" + active
+				+ ", regDate=" + regDate + "]";
+	}
+}//end of class
+
+
+package mybatis.service.domain;
+
+import java.util.ArrayList;
+
+/*
+ * FileName : Search.java
+ *   ㅇ Dynamic SQL 구성시  <foreach> elements 를 이용 반복적 구문생성시 전달되는 
+ *       Collection List , Array 갖는 ValueObeject  
+  */
+public class Search {
+	///Field
+	private String[] userName;
+	private ArrayList<String> userId;
+	private String searchCondition;
+	
+	///Constructor
+	public Search() {
+	}
+	
+	///Method
+	public String[] getUserName() {
+		return userName;
+	}
+	public void setUserName(String[] userName) {
+		this.userName = userName;
+	}
+	
+	public ArrayList<String> getUserId() {
+		return userId;
+	}
+	public void setUserId(ArrayList<String> userId) {
+		this.userId = userId;
+	}
+
+	public String getSearchCondition() {
+		return searchCondition;
+	}
+	public void setSearchCondition(String searchCondition) {
+		this.searchCondition = searchCondition;
+	}
+}//end of class -->
+
+</mapper>

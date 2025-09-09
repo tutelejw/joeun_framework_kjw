@@ -29,7 +29,7 @@
 
     <!-- Mapper 파일 등록 -->
     <mappers>
-<!-- 	
+<!-- 
 	<mapper resource="sql/UserMapper01.xml" />
     <mapper resource="sql/UserMapper02.xml"/> 
     <mapper resource="sql/UserMapper03.xml"/>
@@ -38,12 +38,14 @@
     <mapper resource="sql/UserMapper06.xml"/>
 
 	<mapper resource="sql/UserMapper07.xml"/>
--->
+
 
 	<mapper resource="sql/UserMapper08.xml"/>
-<!--
-	<mapper resource="sql/UserMapper09.xml"/>
+
+
+	<mapper resource="sql/UserMapper09.xml"/> -->
+
 	<mapper resource="sql/UserMapper10.xml"/>
--->
+
     </mappers>
 </configuration>

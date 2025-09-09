@@ -11,5 +11,6 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/jdbc-driver"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/mybatis-3.4.6"/>
 	<classpathentry kind="lib" path="C:/z.utiliy/12.MyBatis/mybatis-3.4.6/lib/log4j-1.2.17.jar"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring-framework-5.2.5.RELEASE"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
