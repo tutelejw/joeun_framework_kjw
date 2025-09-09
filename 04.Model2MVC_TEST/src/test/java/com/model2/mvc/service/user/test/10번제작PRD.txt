@@ -1,0 +1,505 @@
+MyBatis에서 사용할 수 있는 UserMapper10.xml 매핑 파일과 mybatis-config01.xml 파일 작성해줘
+DB접속 정보는 jdbc.properies 파일을 읽어서 사용할수 있는 구조로 해줘.
+테이블 생성 구문으로 매핑구문에서 사용할 resultset과 바이딩될 비지니스 객체 정의해줘, jdbcType 명시해줘
+User.java UserService.java 객체 참고하고 UserDao.java 기준으로 리팩토링 작성해줘
+mapper에서 사용되는 쿼리는 필드명을 모두 명시해줘
+item 의 값은 value로 통일해줘
+필요한 jdbcType 명시해줘
+도메인객체 기준 (field, 타입, jdbcType 명시)
+정리가 되면 userDao.java도 mybatis 방식으로 정리해줘
+SqlSessionFactoryBean.java를 활용해서 MyBatisTestApp10.java와 동일한 방식의 테스트 UserTestApp.java를 작성해줘  
+
+
+ jdbc.properies
+ Oracle DB \
+driver=oracle.jdbc.driver.OracleDriver
+url=jdbc:oracle:thin:@127.0.0.1:1521:xe
+username=scott
+password=tiger
+
+
+CREATE TABLE users ( 
+	user_id 			VARCHAR2(20)	NOT NULL,
+	user_name 	VARCHAR2(50)	NOT NULL,
+	password 		VARCHAR2(10)	NOT NULL,
+	role 					VARCHAR2(5) 		DEFAULT 'user',
+	ssn 					VARCHAR2(13),
+	cell_phone 		VARCHAR2(14),
+	addr 				VARCHAR2(100),
+	email 				VARCHAR2(50),
+	reg_date 		DATE,
+	PRIMARY KEY(user_id)
+);
+
+
+
+package com.model2.mvc.service.domain;
+
+import java.sql.Date;
+
+
+public class User {
+	
+	///Field
+	private String userId;
+	private String userName;
+	private String password;
+	private String role;
+	private String ssn;
+	private String phone;
+	private String addr;
+	private String email;
+	private Date regDate;
+	/////////////// EL 적용 위해 추가된 Field ///////////
+	private String phone1;
+	private String phone2;
+	private String phone3;
+
+	
+	
+	///Constructor
+	public User(){
+	}
+	
+	///Method 
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
+	public String getSsn() {
+		return ssn;
+	}
+	public void setSsn(String ssn) {
+		this.ssn = ssn;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+		/////////////// EL 적용 위해 추가 ///////////
+		if(phone != null && phone.length() !=0 ){
+			phone1 = phone.split("-")[0];
+			phone2 = phone.split("-")[1];
+			phone3 = phone.split("-")[2];
+		}
+	}
+	public String getAddr() {
+		return addr;
+	}
+	public void setAddr(String addr) {
+		this.addr = addr;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public Date getRegDate() {
+		return regDate;
+	}
+	public void setRegDate(Date regDate) {
+		this.regDate = regDate;
+	}
+	/////////////// EL 적용 위해 추가된 getter Method ///////////
+	public String getPhone1() {
+		return phone1;
+	}
+	public String getPhone2() {
+		return phone2;
+	}
+	public String getPhone3() {
+		return phone3;
+	}
+
+	@Override
+	public String toString() {
+		return "UserVO : [userId] "+userId+" [userName] "+userName+" [password] "+password+" [role] "+ role
+			+" [ssn] "+ssn+" [phone] "+phone+" [email] "+email+" [regDate] "+regDate;
+	}
+}
+
+
+
+package com.model2.mvc.service.user;
+
+import java.util.Map;
+
+import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.User;
+
+
+/*
+ * 회원관리를 추상화 캡슐화한 UserService Interface
+ */
+public interface UserService {
+	
+	public void addUser(User user) throws Exception;
+	
+	public User loginUser(User user) throws Exception;
+	
+	public User getUser(String userId) throws Exception;
+	
+	public Map<String, Object> getUserList(Search search) throws Exception;
+	
+	public void updateUser(User user) throws Exception;
+	
+	public boolean checkDuplication(String userId) throws Exception;
+	
+}
+
+
+
+
+package com.model2.mvc.service.user.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+
+import com.model2.mvc.common.Search;
+import com.model2.mvc.common.util.DBUtil;
+import com.model2.mvc.service.domain.User;
+
+
+public class UserDao {
+	
+	///Field
+	
+	///Constructor
+	public UserDao() {
+	}
+
+	///Method
+	public void insertUser(User user) throws Exception {
+		
+		Connection con = DBUtil.getConnection();
+		
+		String sql = 	"INSERT "+ 
+								"INTO USERS "+ 
+								"VALUES (?,?,?,'user',?,?,?,?,SYSDATE)";
+		
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		pStmt.setString(1, user.getUserId());
+		pStmt.setString(2, user.getUserName());
+		pStmt.setString(3, user.getPassword());
+		pStmt.setString(4, user.getSsn());
+		pStmt.setString(5, user.getPhone());
+		pStmt.setString(6, user.getAddr());
+		pStmt.setString(7, user.getEmail());
+		pStmt.executeUpdate();
+		
+		pStmt.close();
+		con.close();
+	}
+
+	public User findUser(String userId) throws Exception {
+		
+		Connection con = DBUtil.getConnection();
+			
+		String sql = 	"SELECT "+
+								"user_id ,  user_name ,  password , role , cell_phone ,  addr ,  email , reg_date " + 
+								"FROM users WHERE user_id = ?";
+		
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		pStmt.setString(1, userId);
+
+		ResultSet rs = pStmt.executeQuery();
+
+		User user = null;
+
+		while (rs.next()) {
+			user = new User();
+			user.setUserId(rs.getString("user_id"));
+			user.setUserName(rs.getString("user_name"));
+			user.setPassword(rs.getString("password"));
+			user.setRole(rs.getString("role"));
+			user.setPhone(rs.getString("cell_phone"));
+			user.setAddr(rs.getString("addr"));
+			user.setEmail(rs.getString("email"));
+			user.setRegDate(rs.getDate("reg_date"));
+		}
+		
+		rs.close();
+		pStmt.close();
+		con.close();
+		
+		return user;
+	}
+
+	public Map<String , Object> getUserList(Search search) throws Exception {
+		
+		Map<String , Object>  map = new HashMap<String, Object>();
+		
+		Connection con = DBUtil.getConnection();
+		
+		// Original Query 구성
+		String sql = "SELECT user_id ,  user_name , email  FROM  users ";
+		
+		if (search.getSearchCondition() != null) {
+			if ( search.getSearchCondition().equals("0") &&  !search.getSearchKeyword().equals("") ) {
+				sql += " WHERE user_id = '" + search.getSearchKeyword()+"'";
+			} else if ( search.getSearchCondition().equals("1") && !search.getSearchKeyword().equals("")) {
+				sql += " WHERE user_name ='" + search.getSearchKeyword()+"'";
+			}
+		}
+		sql += " ORDER BY user_id";
+		
+		System.out.println("UserDAO::Original SQL :: " + sql);
+		
+		//==> TotalCount GET
+		int totalCount = this.getTotalCount(sql);
+		System.out.println("UserDAO :: totalCount  :: " + totalCount);
+		
+		//==> CurrentPage 게시물만 받도록 Query 다시구성
+		sql = makeCurrentPageSql(sql, search);
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		ResultSet rs = pStmt.executeQuery();
+	
+		System.out.println(search);
+
+		List<User> list = new ArrayList<User>();
+		
+		while(rs.next()){
+			User user = new User();
+			user.setUserId(rs.getString("user_id"));
+			user.setUserName(rs.getString("user_name"));
+			user.setEmail(rs.getString("email"));
+			list.add(user);
+		}
+		
+		//==> totalCount 정보 저장
+		map.put("totalCount", new Integer(totalCount));
+		//==> currentPage 의 게시물 정보 갖는 List 저장
+		map.put("list", list);
+
+		rs.close();
+		pStmt.close();
+		con.close();
+
+		return map;
+	}
+
+	public void updateUser(User vo) throws Exception {
+
+		Connection con = DBUtil.getConnection();
+
+		String sql = 	"UPDATE users "+
+								"SET user_name = ?, cell_phone = ? , addr = ? , email = ? "+ 
+								"WHERE user_id = ?";
+		
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		pStmt.setString(1, vo.getUserName());
+		pStmt.setString(2, vo.getPhone());
+		pStmt.setString(3, vo.getAddr());
+		pStmt.setString(4, vo.getEmail());
+		pStmt.setString(5, vo.getUserId());
+		pStmt.executeUpdate();
+		
+		pStmt.close();
+		con.close();
+	}
+	
+	// 게시판 Page 처리를 위한 전체 Row(totalCount)  return
+	private int getTotalCount(String sql) throws Exception {
+		
+		sql = "SELECT COUNT(*) "+
+		          "FROM ( " +sql+ ") countTable";
+		
+		Connection con = DBUtil.getConnection();
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		ResultSet rs = pStmt.executeQuery();
+		
+		int totalCount = 0;
+		if( rs.next() ){
+			totalCount = rs.getInt(1);
+		}
+		
+		pStmt.close();
+		con.close();
+		rs.close();
+		
+		return totalCount;
+	}
+	
+	// 게시판 currentPage Row 만  return 
+	private String makeCurrentPageSql(String sql , Search search){
+		sql = 	"SELECT * "+ 
+					"FROM (		SELECT inner_table. * ,  ROWNUM AS row_seq " +
+									" 	FROM (	"+sql+" ) inner_table "+
+									"	WHERE ROWNUM <="+search.getCurrentPage()*search.getPageSize()+" ) " +
+					"WHERE row_seq BETWEEN "+((search.getCurrentPage()-1)*search.getPageSize()+1) +" AND "+search.getCurrentPage()*search.getPageSize();
+		
+		System.out.println("UserDAO :: make SQL :: "+ sql);	
+		
+		return sql;
+	}
+}
+
+
+
+
+
+
+
+package com.model2.mvc.service.user.test;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.List;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+/*
+ * FileName : SqlSessionFactoryBean.java 
+ *  ==>	SqlSession 을 생성하는 공통적 코딩  Module 
+ *  ==>	Test 를 편하게(?) 하기위한 공통적 코딩 Module 
+ */
+public class SqlSessionFactoryBean {
+
+	/*
+	 * mybatis-config.xml : MyBatis Framework 의 핵심 MetaData
+	 *	XxxMapper.xml : SQL 를 갖는 MetaData
+	 *  MetaData 설정된 정보를 접근,사용가능한 SqlSession instance 리턴하는 static method
+	 */
+	public static  SqlSession getSqlSession() throws IOException{
+		
+		//==> 1. xml metadata 읽는 Stream 생성
+		Reader reader = Resources.getResourceAsReader("sql/mybatis-config01.xml");
+		
+		//==> 2. Reader 객체를 이용 xml MetaData 에 설정된 각정 정보를 접근, 사용가능한 
+		//==>     SqlSession을 생성하는 SqlSessionFactory  instance 생성
+		SqlSessionFactory sqlSessionFactory 
+											= new SqlSessionFactoryBuilder().build(reader);
+		//==>3. SqlSessionFactory 를 통해 autoCommit true 인 SqlSession instance 생성
+		SqlSession sqlSession = sqlSessionFactory.openSession(true);
+		
+		return sqlSession;
+	}
+	
+	/*
+	 * List Collection 객체에 저장된 User 출력
+	 */
+	public static void printList(List<Object> list){
+		for (int i =0 ;  i < list.size() ; i++) {
+			System.out.println( "<"+ ( i +1 )+"> 번째 회원.."+ list.get(i).toString() );
+		}
+		System.out.println("\n");
+	}
+	
+}//end of class
+
+
+
+package com.model2.mvc.service.user.test;
+
+import java.util.ArrayList;
+
+import mybatis.service.domain.Search;
+import mybatis.service.domain.User;
+
+import org.apache.ibatis.session.SqlSession;
+
+/*
+ * FileName : MyBatisTestApp10.java
+  */
+public class MyBatisTestApp10 {
+	
+	///main method
+	public static void main(String[] args) throws Exception{
+	
+		//==> SqlSessionFactoryBean.getSqlSession()을 이용 SqlSession instance GET
+		SqlSession sqlSession = SqlSessionFactoryBean.getSqlSession();
+		System.out.println("\n");
+		
+		//==> Test 용 User instance 생성  
+		User user = new User("user04","주몽","user04",null,0);
+		
+		//1. UserMapper10.addUser Test  :: users table age/grade/redDate 입력값 확인할것 : OK 
+		System.out.println(":: 1. addUser(INSERT)  ? ");
+		System.out.println(":: "+ sqlSession.insert("UserMapper10.addUser",user));
+		System.out.println("\n");
+		
+		//2. UserMapper10.getUser Test :: 주몽 inert 확인 
+		System.out.println(":: 2. getUser(SELECT)  ? ");
+		System.out.println(":: "+sqlSession.selectOne("UserMapper10.getUser",user.getUserId()) );
+		System.out.println("\n");
+		
+		//3. UserMapper10.uadateUser Test  :: users table age/grade/redDate 입력값 확인할것 : OK
+		//                                                    :: 주몽 ==> 온달 수정
+		user.setUserName("온달");
+		user.setGrade(777);
+		System.out.println(":: 3. update(UPDATE)  ? ");
+		System.out.println(":: "+ sqlSession.update("UserMapper10.updateUser",user));
+		System.out.println("\n");
+		
+		//4. UserMapper10.getUserList Test  :: Dynamic Query 확인 id=user04/name=온달 검색
+		System.out.println(":: 4. getUser(SELECT)  ? ");
+		System.out.println(":: "+sqlSession.selectOne("UserMapper10.getUser",user.getUserId()) );
+		System.out.println("\n");
+		
+		//5. UserMapper10.removeUser Test
+		System.out.println(":: 5. Use10.removeUser (DELETE)  ? ");
+		System.out.println(":: "+sqlSession.delete("UserMapper10.removeUser", 
+																						   user.getUserId()) );
+		System.out.println("\n");
+		System.out.println("/////////////////////////////////////////////////////////////////////////////////////////////////");
+		System.out.println("\n");
+		
+		//==> Test 용 Search instance 생성 
+		Search search = new Search();
+		
+		//1. UserMapper10.getUserList Test 
+		System.out.println(":: 1. getUserList01(SELECT)  ? ");
+		SqlSessionFactoryBean.printList( sqlSession.selectList("UserMapper10.getUserList",search) );
+		
+		//2. UserMapper10.getUserList Test 
+		search.setSearchCondition("userId");
+		ArrayList<String> arrayList = new ArrayList<String>();
+		arrayList.add("user01");
+		search.setUserId( arrayList );
+		
+		System.out.println(":: 2. getUserList01(SELECT)  ? ");
+		SqlSessionFactoryBean.printList( sqlSession.selectList("UserMapper10.getUserList",search) );
+		
+		//3. UserMapper10.getUserList Test 
+		search.setSearchCondition("userName");
+		search.setUserName( new String[]{ "이순신"} );
+		
+		System.out.println(":: 3. getUserList01(SELECT)  ? ");
+		SqlSessionFactoryBean.printList( sqlSession.selectList("UserMapper10.getUserList",search) );
+
+		//END::SqlSession  close
+		System.out.println("::END::SqlSession 닫기..");
+		sqlSession.close();
+		
+	}//end of main
+}//end of class
