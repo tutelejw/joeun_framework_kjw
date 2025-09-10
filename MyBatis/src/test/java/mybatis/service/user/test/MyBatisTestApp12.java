@@ -12,6 +12,10 @@ import mybatis.service.user.impl.UserServiceImpl12;
 /*
  * FileName : MyBatisTestApp12.java
   * :: Business Layer unit Test : Service + Persistence (MyBatis + DAO)
+  * Business Layer unit Test
+  * Business Layer unit Test
+  * Business Layer unit Test
+  * Business Layer unit Test 생성과 인젝션을 하고 있다.. 13번에서 제거 한다.
   */
 public class MyBatisTestApp12 {
 	

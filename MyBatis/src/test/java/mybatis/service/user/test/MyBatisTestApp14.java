@@ -12,7 +12,8 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /*
  * FileName : MyBatisTestApp14.java
   * :: Business Layer unit Test : Service + Persistence (Spring +mybatis + DAO)
-  * ::  Annotation 기반 
+  *   * xml wirering  -      "/config/commonservice14.xml"
+  * ::  @ Annotation 기반 xml이 많아지지 않게 
   */
 public class MyBatisTestApp14 {
 	

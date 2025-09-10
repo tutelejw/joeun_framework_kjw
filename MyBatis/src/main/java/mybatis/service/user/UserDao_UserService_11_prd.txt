@@ -1,7 +1,7 @@
 아래의 domain 객체 참고해줘
 
 1.UserDao 생성해줘
-User 도메인 객체를 참고해서, addUser, getUser, updateUser, removeUser, getUserList 메서드 시그니처만 포함한 
+User.java 도메인 객체를 참고해서, addUser, getUser, updateUser, removeUser, getUserList 메서드 시그니처만 포함한 
 UserDao 인터페이스를 자바로 작성해줘. 
 public 메서드, throws Exception 포함. 구현은 제외해줘.
 

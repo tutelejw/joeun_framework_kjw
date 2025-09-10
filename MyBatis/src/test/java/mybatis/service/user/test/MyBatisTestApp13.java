@@ -12,6 +12,7 @@ import org.springframework.context.support.ClassPathXmlApplicationContext;
 /*
  * FileName : MyBatisTestApp13.java
   * :: Business Layer unit Test : Service + Persistence (Spring +mybatis + DAO)
+  * xml wirering  -      "/config/commonservice13.xml", "/config/userservice13.xml"
   */
 public class MyBatisTestApp13 {
 	
