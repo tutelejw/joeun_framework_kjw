@@ -1,11 +1,13 @@
 
-아래의 UserDao, UserService, mapper 참고해서 UserDaoImpl11.java 작성해줘
+아래의 UserDao.java 첨부, UserService.java 첨부, UserMapper10.xml 첨부 참고해서 UserDaoImpl11.java 작성해줘
 UserMapper10.xml을 이용해줘
 package mybatis.service.user.impl; 로 해줘
 MyBatis 기반 Mapper (UserMapper10.xml) 활용
 UserDaoImpl11: SqlSession 주입 받아 SQL 매핑 실행, 메서드별 DB 작업 수행
 디버깅 목적의 System.out.println 로그 포함 (생성자, setter, 주요 메서드 호출 시)
 모든 메서드는 Exception throws 선언 (교육용으로 try-catch 생략)
+
+
 
 package mybatis.service.user;
 
