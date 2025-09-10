@@ -1,0 +1,100 @@
+주어진 테스트 자바 파일(UserServiceTest.java)은 Spring Framework와 JUnit4를 이용하여 UserService 클래스의 기능(사용자 추가, 조회, 수정, 중복 확인, 목록 조회 등)을 테스트하는 통합 테스트 클래스입니다.
+
+이와 같은 테스트 파일을 생성하기 위한 프롬프트를 만들기 위해서는 다음과 같은 요소들이 필요합니다:
+
+✅ 목적
+
+UserService의 주요 메서드에 대한 통합 테스트를 작성한다.
+(Spring + JUnit4 기반, 테스트 케이스별 메서드)
+
+✅ 전제 조건
+
+Spring Framework 사용 중
+
+UserService 인터페이스와 구현체(userServiceImpl)가 존재
+
+도메인 클래스 User와 검색 조건 클래스 Search 존재
+
+XML 기반 설정(commonservice.xml)으로 빈 설정됨
+
+🎯 프롬프트 예시
+Spring Framework와 JUnit4를 사용해 `UserService` 클래스의 기능을 테스트하는 통합 테스트 클래스를 만들어줘.
+
+### 전제
+- `UserService` 인터페이스는 다음 기능을 가진다:
+  1. `void addUser(User user)`
+  2. `User getUser(String userId)`
+  3. `void updateUser(User user)`
+  4. `boolean checkDuplication(String userId)`
+  5. `Map<String, Object> getUserList(Search search)`
+  
+- `User` 클래스는 다음 필드를 가진다:
+  - String userId
+  - String userName
+  - String password
+  - String ssn
+  - String phone
+  - String addr
+  - String email
+
+- `Search` 클래스는 다음 필드를 가진다:
+  - int currentPage
+  - int pageSize
+  - String searchCondition
+  - String searchKeyword
+
+### 조건
+- `@RunWith(SpringJUnit4ClassRunner.class)`와 `@ContextConfiguration`으로 Spring 설정 파일을 로딩
+- `userServiceImpl` 빈을 주입받아 테스트
+- 테스트 메서드는 `@Test`를 사용하여 작성
+- `Assert` 클래스를 사용해 각 메서드의 예상 결과를 검증
+- 예외 처리를 위해 테스트 메서드는 `throws Exception` 사용
+- 콘솔 출력은 주석으로 남겨서 선택적으로 확인할 수 있게 함
+
+### 테스트 케이스 포함
+1. addUser: 사용자 추가 후 getUser로 검증
+2. getUser: 존재하는 사용자 정보 조회
+3. updateUser: 사용자 정보 변경 후 검증
+4. checkDuplication: 사용자 ID 중복 여부 확인
+5. getUserList: 전체 목록 조회, 조건별 조회 (userId, userName)
+
+이 조건을 바탕으로 테스트 클래스 `UserServiceTest.java`를 생성해줘.
+
+
+이 프롬프트를 사용하면, 테스트 클래스 전체를 코드로 생성하거나 혹은 테스트 케이스별로 부분적으로 생성할 수도 있습니다.
+
+필요에 따라 다음과 같이 구체적으로 분리해서 요청할 수도 있습니다:
+
+"addUser 메서드를 테스트하는 JUnit4 + Spring 통합 테스트 메서드 만들어줘"
+
+"UserService의 getUserList 메서드를 다양한 조건으로 테스트하는 메서드 만들어줘"
+
+"UserService에 대한 전체 테스트 클래스 생성해줘. 단, XML 설정 기반으로 Bean을 주입받게 해줘"
+
+필요하면 이 프롬프트를 좀 더 압축형, 확장형, 한글/영문 버전으로도 바꿔드릴 수 있어요. 원하시나요?
+
+나의 말:
+압축형으로
+ChatGPT의 말:
+
+물론입니다! 다음은 압축형으로 정리된 프롬프트입니다:
+
+🎯 압축형 프롬프트
+Spring Framework와 JUnit4로 `UserService`의 기능을 테스트하는 클래스 작성. 
+
+### 조건
+- `@RunWith(SpringJUnit4ClassRunner.class)`로 Spring 설정 파일 로딩
+- `userServiceImpl` 빈 주입
+- 테스트 메서드에 `@Test` 사용, `Assert`로 결과 검증
+- `throws Exception` 사용
+- `User` 클래스: `userId`, `userName`, `password`, `ssn`, `phone`, `addr`, `email`
+- `Search` 클래스: `currentPage`, `pageSize`, `searchCondition`, `searchKeyword`
+
+### 테스트 케이스
+1. `addUser`: 사용자 추가 후 `getUser`로 검증
+2. `getUser`: 사용자 정보 조회
+3. `updateUser`: 사용자 정보 수정 후 검증
+4. `checkDuplication`: ID 중복 여부 확인
+5. `getUserList`: 목록 조회 (조건별)
+
+`UserServiceTest.java` 생성.

@@ -1,0 +1,458 @@
+아래의 DB 테이블 생성 구문/User.java / Search.java / userDao.java / UserDaoImpl11.java / SqlSessionFactoryBean.java / UserMapper10.xml 매퍼 를 참고해줘
+테스트 할수 있는 UserTestApp11.java 파일을 생성해줘
+package는 com.model2.mvc.service.user.test 로 해줘
+SqlSessionFactoryBean.getSqlSession()을 이용 SqlSession instance GET 해줘
+UserDaoImpl11 생성 및 sqlSession instance setter injection
+테스트용 User instance  데이터로 활용해줘(생성자 확인해서 활용해줘)
+
+
+CREATE TABLE users ( 
+	user_id 			VARCHAR2(20)		NOT NULL,
+	user_name 	VARCHAR2(50)		NOT NULL,
+	password 		VARCHAR2(10)		NOT NULL,
+	role 				VARCHAR2(5) 		DEFAULT 'user',
+	ssn 					VARCHAR2(13),
+	cell_phone   VARCHAR2(14),
+	addr 				VARCHAR2(100),
+	email 				VARCHAR2(50),
+	reg_date 		DATE,
+	PRIMARY KEY(user_id)
+);
+
+
+
+
+package com.model2.mvc.service.domain;
+
+import java.sql.Date;
+
+
+public class User {
+	
+	///Field
+	private String userId;
+	private String userName;
+	private String password;
+	private String role;
+	private String ssn;
+	private String phone;
+	private String addr;
+	private String email;
+	private Date regDate;
+	/////////////// EL 적용 위해 추가된 Field ///////////
+	private String phone1;
+	private String phone2;
+	private String phone3;
+
+	
+	
+	///Constructor
+	public User(){
+	}
+	
+	///Method 
+	public String getUserId() {
+		return userId;
+	}
+	public void setUserId(String userId) {
+		this.userId = userId;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public String getPassword() {
+		return password;
+	}
+	public void setPassword(String password) {
+		this.password = password;
+	}
+	public String getRole() {
+		return role;
+	}
+	public void setRole(String role) {
+		this.role = role;
+	}
+	public String getSsn() {
+		return ssn;
+	}
+	public void setSsn(String ssn) {
+		this.ssn = ssn;
+	}
+	public String getPhone() {
+		return phone;
+	}
+	public void setPhone(String phone) {
+		this.phone = phone;
+		/////////////// EL 적용 위해 추가 ///////////
+		if(phone != null && phone.length() !=0 ){
+			phone1 = phone.split("-")[0];
+			phone2 = phone.split("-")[1];
+			phone3 = phone.split("-")[2];
+		}
+	}
+	public String getAddr() {
+		return addr;
+	}
+	public void setAddr(String addr) {
+		this.addr = addr;
+	}
+	public String getEmail() {
+		return email;
+	}
+	public void setEmail(String email) {
+		this.email = email;
+	}
+	public Date getRegDate() {
+		return regDate;
+	}
+	public void setRegDate(Date regDate) {
+		this.regDate = regDate;
+	}
+	/////////////// EL 적용 위해 추가된 getter Method ///////////
+	public String getPhone1() {
+		return phone1;
+	}
+	public String getPhone2() {
+		return phone2;
+	}
+	public String getPhone3() {
+		return phone3;
+	}
+
+	@Override
+	public String toString() {
+		return "UserVO : [userId] "+userId+" [userName] "+userName+" [password] "+password+" [role] "+ role
+			+" [ssn] "+ssn+" [phone] "+phone+" [email] "+email+" [regDate] "+regDate;
+	}
+}
+
+
+
+
+
+
+
+
+package com.model2.mvc.service.domain;
+
+
+public class Search {
+	
+	///Field
+	private int curruntPage;
+	private String searchCondition;
+	private String searchKeyword;
+	private int pageSize;
+    private String value;  // 검색값
+	
+	///Constructor
+	public Search() {
+	}
+	
+	///Method
+    public String getValue() {
+        return value;
+    }
+
+    public void setValue(String value) {
+        this.value = value;
+    }
+	
+	public int getPageSize() {
+		return pageSize;
+	}
+	public void setPageSize(int paseSize) {
+		this.pageSize = paseSize;
+	}
+	
+	public int getCurrentPage() {
+		return curruntPage;
+	}
+	public void setCurrentPage(int curruntPage) {
+		this.curruntPage = curruntPage;
+	}
+
+	public String getSearchCondition() {
+		return searchCondition;
+	}
+	public void setSearchCondition(String searchCondition) {
+		this.searchCondition = searchCondition;
+	}
+	public String getSearchKeyword() {
+		return searchKeyword;
+	}
+	public void setSearchKeyword(String searchKeyword) {
+		this.searchKeyword = searchKeyword;
+	}
+
+	@Override
+	public String toString() {
+		return "Search [curruntPage=" + curruntPage + ", searchCondition="
+				+ searchCondition + ", searchKeyword=" + searchKeyword
+				+ ", pageSize=" + pageSize + "]";
+	}
+}
+
+
+
+
+
+package com.model2.mvc.service.user;
+
+import java.util.Map;
+
+import com.model2.mvc.service.domain.Search;
+import com.model2.mvc.service.domain.User;
+
+public interface UserDao {
+
+    public void insertUser(User user) throws Exception;
+
+    public User findUser(String userId) throws Exception;
+
+    public Map<String, Object> getUserList(Search search) throws Exception;
+
+    public void updateUser(User user) throws Exception;
+
+    public boolean checkDuplication(String userId) throws Exception;
+}
+
+
+
+
+
+
+package com.model2.mvc.service.user.impl;
+
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.apache.ibatis.session.SqlSession;
+
+import com.model2.mvc.service.domain.Search;
+import com.model2.mvc.service.domain.User;
+import com.model2.mvc.service.user.UserDao;
+
+public class UserDaoImpl11 implements UserDao {
+
+    /// Field
+    private SqlSession sqlSession;
+
+    /// Constructor
+    public UserDaoImpl11() {
+        System.out.println("[" + getClass().getSimpleName() + "] 생성자 호출됨");
+    }
+
+    /// Setter for SqlSession (DI 주입용)
+    public void setSqlSession(SqlSession sqlSession) {
+        System.out.println("[" + getClass().getSimpleName() + "] setSqlSession() 호출됨");
+        this.sqlSession = sqlSession;
+    }
+
+    /// Method - insertUser
+    @Override
+    public void insertUser(User user) throws Exception {
+        System.out.println("[" + getClass().getSimpleName() + "] insertUser() 호출됨");
+        int affectedRows = sqlSession.insert("UserMapper10.addUser", user);
+        System.out.println("insertUser - 영향받은 행 수: " + affectedRows);
+    }
+
+    /// Method - findUser
+    @Override
+    public User findUser(String userId) throws Exception {
+        System.out.println("[" + getClass().getSimpleName() + "] findUser() 호출됨");
+        User user = sqlSession.selectOne("UserMapper10.getUser", userId);
+        System.out.println("findUser - 조회된 User: " + (user != null ? user.getUserId() : "없음"));
+        return user;
+    }
+
+    /// Method - getUserList
+    @Override
+    public Map<String, Object> getUserList(Search search) throws Exception {
+        System.out.println("[" + getClass().getSimpleName() + "] getUserList() 호출됨");
+        List<User> list = sqlSession.selectList("UserMapper10.getUserList", search);
+
+        Map<String, Object> map = new HashMap<>();
+        map.put("list", list);
+        map.put("totalCount", list.size());  // 단순히 list 사이즈로 대체 (실제 totalCount 쿼리 필요할 수 있음)
+
+        System.out.println("getUserList - 반환된 리스트 크기: " + list.size());
+
+        return map;
+    }
+
+    /// Method - updateUser
+    @Override
+    public void updateUser(User user) throws Exception {
+        System.out.println("[" + getClass().getSimpleName() + "] updateUser() 호출됨");
+        int affectedRows = sqlSession.update("UserMapper10.updateUser", user);
+        System.out.println("updateUser - 영향받은 행 수: " + affectedRows);
+    }
+
+    /// Method - checkDuplication
+    @Override
+    public boolean checkDuplication(String userId) throws Exception {
+        System.out.println("[" + getClass().getSimpleName() + "] checkDuplication() 호출됨");
+        User user = sqlSession.selectOne("UserMapper10.getUser", userId);
+        boolean isDuplicated = (user != null);
+        System.out.println("checkDuplication - 중복 여부: " + isDuplicated);
+        return isDuplicated;
+    }
+}
+
+
+
+
+package com.model2.mvc.service.user.test;
+
+import java.io.IOException;
+import java.io.Reader;
+import java.util.List;
+
+import org.apache.ibatis.io.Resources;
+import org.apache.ibatis.session.SqlSession;
+import org.apache.ibatis.session.SqlSessionFactory;
+import org.apache.ibatis.session.SqlSessionFactoryBuilder;
+
+/*
+ * FileName : SqlSessionFactoryBean.java 
+ *  ==>	SqlSession 을 생성하는 공통적 코딩  Module 
+ *  ==>	Test 를 편하게(?) 하기위한 공통적 코딩 Module 
+ */
+public class SqlSessionFactoryBean {
+
+	/*
+	 * mybatis-config.xml : MyBatis Framework 의 핵심 MetaData
+	 *	XxxMapper.xml : SQL 를 갖는 MetaData
+	 *  MetaData 설정된 정보를 접근,사용가능한 SqlSession instance 리턴하는 static method
+	 */
+	public static  SqlSession getSqlSession() throws IOException{
+		
+		//==> 1. xml metadata 읽는 Stream 생성
+		Reader reader = Resources.getResourceAsReader("sql/mybatis-config01.xml");
+		
+		//==> 2. Reader 객체를 이용 xml MetaData 에 설정된 각정 정보를 접근, 사용가능한 
+		//==>     SqlSession을 생성하는 SqlSessionFactory  instance 생성
+		SqlSessionFactory sqlSessionFactory 
+											= new SqlSessionFactoryBuilder().build(reader);
+		//==>3. SqlSessionFactory 를 통해 autoCommit true 인 SqlSession instance 생성
+		SqlSession sqlSession = sqlSessionFactory.openSession(true);
+		
+		return sqlSession;
+	}
+	
+	/*
+	 * List Collection 객체에 저장된 User 출력
+	 */
+	public static void printList(List<Object> list){
+		for (int i =0 ;  i < list.size() ; i++) {
+			System.out.println( "<"+ ( i +1 )+"> 번째 회원.."+ list.get(i).toString() );
+		}
+		System.out.println("\n");
+	}
+	
+}//end of class
+
+
+
+
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE mapper
+        PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+               "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper10">
+
+  <resultMap id="userSelectMap" type="User">
+    <id     property="userId"   column="user_id"   jdbcType="VARCHAR"/>
+    <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+    <result property="password" column="password"  jdbcType="VARCHAR"/>
+    <result property="role"     column="role"      jdbcType="VARCHAR"/>
+    <result property="ssn"      column="ssn"       jdbcType="VARCHAR"/>
+    <result property="phone"    column="cell_phone" jdbcType="VARCHAR"/>
+    <result property="addr"     column="addr"      jdbcType="VARCHAR"/>
+    <result property="email"    column="email"     jdbcType="VARCHAR"/>
+    <result property="regDate"  column="reg_date"  jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <sql id="select-users">
+    select user_id, user_name, password, role, ssn, cell_phone as phone, addr, email, reg_date
+    from users
+  </sql>
+
+  <sql id="orderby-user-desc">
+    order by user_id desc
+  </sql>
+
+ <insert id="addUser" parameterType="user">
+  insert into users (
+    user_id,
+    user_name,
+    password,
+    role,
+    ssn,
+    cell_phone,
+    addr,
+    email,
+    reg_date
+  )
+  values (
+    #{userId, jdbcType=VARCHAR},
+    #{userName, jdbcType=VARCHAR},
+    #{password, jdbcType=VARCHAR},
+    #{role, jdbcType=VARCHAR},
+    #{ssn, jdbcType=VARCHAR},
+    #{phone, jdbcType=VARCHAR},
+    #{addr, jdbcType=VARCHAR},
+    #{email, jdbcType=VARCHAR},
+    #{regDate, jdbcType=DATE}
+  )
+</insert>
+
+
+  <select id="getUser" resultMap="userSelectMap" parameterType="string">
+    <include refid="select-users"/>
+    where user_id = #{userId, jdbcType=VARCHAR}
+    <include refid="orderby-user-desc"/>
+  </select>
+
+  <update id="updateUser" parameterType="User">
+    update users
+      set user_name = #{userName, jdbcType=VARCHAR},
+          password  = #{password, jdbcType=VARCHAR},
+          role      = #{role, jdbcType=VARCHAR},
+          ssn       = #{ssn, jdbcType=VARCHAR},
+          cell_phone= #{phone, jdbcType=VARCHAR},
+          addr      = #{addr, jdbcType=VARCHAR},
+          email     = #{email, jdbcType=VARCHAR},
+          reg_date  = #{regDate, jdbcType=TIMESTAMP}
+    where user_id = #{userId, jdbcType=VARCHAR}
+  </update>
+
+  <delete id="removeUser" parameterType="string">
+    delete from users
+    where user_id = #{userId, jdbcType=VARCHAR}
+  </delete>
+
+  <select id="getUserList" resultMap="userSelectMap" parameterType="Search">
+    <include refid="select-users"/>
+    <where>
+      <if test="searchCondition != null and searchCondition != ''">
+        <choose>
+          <when test="searchCondition == 'userId'">
+            user_id = #{value, jdbcType=VARCHAR}
+          </when>
+          <when test="searchCondition == 'userName'">
+            user_name = #{value, jdbcType=VARCHAR}
+          </when>
+        </choose>
+      </if>
+    </where>
+    <include refid="orderby-user-desc"/>
+  </select>
+</mapper>
+
