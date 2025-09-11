@@ -47,13 +47,14 @@ public class ProductServiceTest {
     @Test
     public void testAddAndGetProduct() throws Exception {
         productService.addProduct(testProduct);
-        int prodNo = 10040; // addProduct 후 prodNo가 세팅되어 있어야 함
+        int prodNo = 10042; // addProduct 후 prodNo가 세팅되어 있어야 함
 //        int prodNo = testProduct.getProdNo(); // addProduct 후 prodNo가 세팅되어 있어야 함
 
         Product result = productService.getProduct(prodNo);
 
         assertNotNull(result);
         assertEquals("테스트상품", result.getProdName());
+        System.out.println(result);
         System.out.println("==> testAddAndGetProduct 완료");
     }
 
