@@ -3,29 +3,32 @@
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
   "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
 
-<mapper namespace="com.model2.mvc.service.product.ProductDao">
+<mapper namespace="ProductMapper">
+<!-- <mapper namespace="UserMapper"> -->
+<!-- <mapper namespace="com.model2.mvc.service.product.ProductDao"> -->
 
   <!-- ResultMap for Product -->
   <resultMap id="productResultMap" type="com.model2.mvc.service.domain.Product">
     <id property="prodNo" column="PROD_NO" jdbcType="INTEGER"/>
     <result property="prodName" column="PROD_NAME" jdbcType="VARCHAR"/>
     <result property="prodDetail" column="PROD_DETAIL" jdbcType="VARCHAR"/>
-    <result property="manuDate" column="MANUFACTURE_DAY" jdbcType="VARCHAR"/>
+    <result property="manuDay" column="MANUFACTURE_DAY" jdbcType="VARCHAR"/>
     <result property="price" column="PRICE" jdbcType="INTEGER"/>
-    <result property="fileName" column="IMAGE_FILE" jdbcType="VARCHAR"/>
+    <result property="imageFile" column="IMAGE_FILE" jdbcType="VARCHAR"/>
     <result property="regDate" column="REG_DATE" jdbcType="DATE"/>
     <result property="proTranCode" column="TRAN_STATUS_TEXT" jdbcType="VARCHAR"/>
   </resultMap>
 
   <!-- Insert Product -->
-  <insert id="insertProduct" parameterType="com.model2.mvc.service.domain.Product">
+  <insert id="addProduct" parameterType="product">
+<!--   <insert id="addProduct" parameterType="com.model2.mvc.service.domain.Product"> -->
     INSERT INTO PRODUCT (
       PROD_NO, IMAGE_FILE, MANUFACTURE_DAY, PRICE, PROD_DETAIL, PROD_NAME, REG_DATE
     )
     VALUES (
       seq_product_prod_no.NEXTVAL,
-      #{fileName, jdbcType=VARCHAR},
-      #{manuDate, jdbcType=VARCHAR},
+      #{imageFile, jdbcType=VARCHAR},
+      #{manuDay, jdbcType=VARCHAR},
       #{price, jdbcType=INTEGER},
       #{prodDetail, jdbcType=VARCHAR},
       #{prodName, jdbcType=VARCHAR},
@@ -65,7 +68,13 @@
       </if>
     </where>
   </select>
-
+	 <!-- SQL : SELECT ONE -->
+	 <select 	id="getProduct" parameterType="product"	resultMap="productResultMap">
+		SELECT
+		prod_no ,prod_name, prod_detail, manufacture_day, price,image_file, reg_date		
+		FROM product 
+		WHERE prod_no = #{value}
+	 </select>
   <!-- Get Product List (페이징 포함) -->
   <select id="getProductList" parameterType="com.model2.mvc.common.Search" resultMap="productResultMap">
     SELECT * FROM (
