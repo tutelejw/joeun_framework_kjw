@@ -1,0 +1,384 @@
+04.Model2MVCShop(Business Logic,MyBatis Spring)/src/main/resources/sql/Product_Mapper_Dao_Service_DAO있을때PRD.txt
+
+프롬프트: MyBatis 기반 DAO & Service & Mapper XML 생성 요청 템플릿
+다음 자바 코드와 DB 테이블 구조를 기준으로 MyBatis를 사용하여 다음을 만들어줘:
+
+1. MyBatis 매퍼 XML (`ProductMapper.xml`)  
+   - 각 SQL에는 필드명을 모두 명시해줘 (`SELECT *` 사용하지 말기)  
+   - `item`은 모두 `value`로 통일해줘  
+   - `jdbcType` 명시해줘 (Oracle 기준)  
+   - 조건 검색 포함 (예: `searchCondition`, `searchKeyword`)  
+   - `getProductList`와 `getTotalCount`는 `Search` 객체를 파라미터로 받고, 조건 검색과 페이징 처리를 위한 동적 SQL로 작성해줘  
+   - `resultMap`은 생략하지 말고 작성해줘  
+   - `resultType`은 도메인 클래스 사용해줘
+
+2. `ProductDao` 인터페이스  
+   - 메서드는 `public`, `throws Exception` 포함  
+   - 실제 구현은 제외하고 시그니처만 작성해줘  
+   - 메서드명과 파라미터는 아래 자바 클래스에 맞춰줘
+
+3. `ProductService` 인터페이스  
+   - 비즈니스 로직을 추상화  
+   - DAO와 1:1이 아닌, 비즈니스 관점에서 필요한 메서드만 추려줘  
+   - 예: insert, get, update, list 등
+
+---
+
+💾 테이블 DDL:
+
+```sql
+CREATE TABLE product ( 
+  prod_no           NUMBER              NOT NULL,
+  prod_name         VARCHAR2(100)       NOT NULL,
+  prod_detail       VARCHAR2(200),
+  manufacture_day   VARCHAR2(10),
+  price             NUMBER(10),
+  image_file        VARCHAR2(100),
+  reg_date          DATE,
+  PRIMARY KEY(prod_no)
+);
+
+
+
+📦 Search.java 구조:
+
+public class Search {
+  private int currentPage;
+  private String searchCondition;
+  private String searchKeyword;
+  private int pageSize;
+  private int endRowNum;
+  private int startRowNum;
+}
+
+
+📦 Product.java 예시 필드 구조 (추정):
+
+public class Product {
+  private int prodNo;
+  private String prodName;
+  private String prodDetail;
+  private String manuDate;
+  private int price;
+  private String fileName;
+  private Date regDate;
+  private String proTranCode;  // 상태코드 텍스트
+}
+
+
+✍️ 최종 산출물은 다음 3개 파일로 구성해줘:
+
+ProductMapper.xml
+
+ProductDao.java (인터페이스)
+
+ProductService.java (인터페이스)
+
+
+
+
+
+
+CREATE TABLE product ( 
+	prod_no 					NUMBER 				NOT NULL,
+	prod_name 				VARCHAR2(100) 	NOT NULL,
+	prod_detail 				VARCHAR2(200),
+	manufacture_day   VARCHAR2(10),
+	price 							NUMBER(10),
+	image_file 					VARCHAR2(100),
+	reg_date 					DATE,
+	PRIMARY KEY(prod_no)
+);
+
+
+
+package com.model2.mvc.service.product.dao;
+
+import java.sql.Connection;
+import java.sql.PreparedStatement;
+import java.sql.ResultSet;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.Map;
+import java.util.List;
+
+import com.model2.mvc.common.Search;
+import com.model2.mvc.common.util.DBUtil;
+import com.model2.mvc.service.domain.Product;
+
+
+public class ProductDao {
+	
+	///Field
+	
+	///Constructor
+	public ProductDao() {
+	}
+
+	///Method
+	public void insertProduct(Product product) throws Exception {
+		
+		Connection con = DBUtil.getConnection();
+		
+
+		String sql = "INSERT INTO PRODUCT (PROD_NO,IMAGE_FILE, MANUFACTURE_DAY, PRICE, PROD_DETAIL, PROD_NAME, REG_DATE) values "
+								+ "(seq_product_prod_no.nextval,?,?,?,?,?,sysdate)";
+		
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		pStmt.setString(1, product.getFileName());
+		pStmt.setString(2, product.getManuDate());
+		pStmt.setInt(3, product.getPrice());
+		pStmt.setString(4, product.getProdDetail());
+		pStmt.setString(5, product.getProdName());
+		pStmt.executeUpdate();
+		
+		System.out.println("ProductDao - insertProduct method 부분 : " + sql);
+		
+		pStmt.close();
+		con.close();
+	}
+
+	
+	public Product findProduct(String prodNo) throws Exception {
+		
+		Connection con = DBUtil.getConnection();
+			
+		String sql = "SELECT PROD_NO,\r\n"
+				+ "    PROD_NAME,\r\n"
+				+ "    PROD_DETAIL,\r\n"
+				+ "    MANUFACTURE_DAY,\r\n"
+				+ "    PRICE,\r\n"
+				+ "    IMAGE_FILE,\r\n"
+				+ "    REG_DATE \r\n"
+				+ "	 FROM PRODUCT where PROD_NO=?";
+		
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		pStmt.setString(1, prodNo);
+
+		ResultSet rs = pStmt.executeQuery();
+
+		Product product = null;
+		while (rs.next()) {
+			product = new Product();
+			product.setProdNo(rs.getInt("PROD_NO"));
+			product.setProdName(rs.getString("PROD_NAME"));
+			product.setProdDetail(rs.getString("PROD_DETAIL"));
+			product.setManuDate(rs.getString("MANUFACTURE_DAY"));
+			product.setPrice(rs.getInt("PRICE"));
+			product.setFileName(rs.getString("IMAGE_FILE"));
+			product.setRegDate(rs.getDate("REG_DATE"));
+		}
+		
+		System.out.println("ProductDao - findProduct method 부분 : " + sql);
+		
+		rs.close();
+		pStmt.close();
+		con.close();
+		
+		return product;
+	}
+
+	public Map<String , Object> getProductList(Search search) throws Exception {
+		
+		Map<String , Object>  map = new HashMap<String, Object>();
+		
+		Connection con = DBUtil.getConnection();
+		
+		// 거래 상태 코드 포함을 위해 TRANSACTION 테이블 JOIN
+		String sql = 
+			    "SELECT P.PROD_NO, P.PROD_NAME, P.PROD_DETAIL, P.MANUFACTURE_DAY, " +
+			    "       P.PRICE, P.IMAGE_FILE, P.REG_DATE, " +
+			    "       CASE WHEN T.PROD_NO IS NOT NULL THEN '재고없음' ELSE '판매중' END AS TRAN_STATUS_TEXT " +
+			    "FROM PRODUCT P LEFT JOIN TRANSACTION T ON P.PROD_NO = T.PROD_NO";
+	
+	    if (search.getSearchCondition() != null) {
+			if ( search.getSearchCondition().equals("0") &&  !search.getSearchKeyword().equals("") ) {
+	    		sql += " where P.PROD_NO like '%" + search.getSearchKeyword() + "%' ";
+				} else if ( search.getSearchCondition().equals("1") && !search.getSearchKeyword().equals("")) {
+	    		sql += " where P.PROD_NAME like '%" + search.getSearchKeyword() + "%' ";
+	    	}
+	    }
+	    sql += " ORDER BY P.PROD_NO DESC";
+
+	    System.out.println("ProductDAO getProductList - SQL : "+sql);
+	    System.out.println("ProductDAO::Original SQL :: " + sql);
+		
+		//==> TotalCount GET
+		int totalCount = this.getTotalCount(sql);
+		System.out.println("ProductDAO :: totalCount  :: " + totalCount);
+		
+		//==> CurrentPage 게시물만 받도록 Query 다시구성
+		sql = makeCurrentPageSql(sql, search);
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		ResultSet rs = pStmt.executeQuery();
+	
+		System.out.println(search);
+
+		List<Product> list = new ArrayList<Product>();
+		
+		while(rs.next()){
+			Product product = new Product();
+			product.setProdNo(rs.getInt("PROD_NO"));
+			product.setProdName(rs.getString("PROD_NAME"));
+			product.setProdDetail(rs.getString("PROD_DETAIL"));
+			product.setManuDate(rs.getString("MANUFACTURE_DAY"));
+			product.setPrice(rs.getInt("PRICE"));
+			product.setFileName(rs.getString("IMAGE_FILE"));
+			product.setRegDate(rs.getDate("REG_DATE"));
+			product.setProTranCode(rs.getString("TRAN_STATUS_TEXT"));  // 바로 상태텍스트 세팅
+			list.add(product);
+		}
+	    System.out.println("ProductDAO getProductList -  List<Product> list  : ");
+	    
+		//==> totalCount 정보 저장
+		map.put("totalCount", new Integer(totalCount));
+		//==> currentPage 의 게시물 정보 갖는 List 저장
+		map.put("list", list);
+
+		rs.close();
+		pStmt.close();
+		con.close();
+
+		return map;
+	}
+
+	public void updateProduct(Product vo) throws Exception {
+	    // 로그를 추가하여 값 확인
+	    System.out.println("ProductDao 의 updateProduct 실행 시작");
+	    System.out.println("Received Product:");
+	    System.out.println("Product Name: " + vo.getProdName());
+	    System.out.println("Product Detail: " + vo.getProdDetail());
+	    System.out.println("Manufacture Date: " + vo.getManuDate());
+	    System.out.println("Price: " + vo.getPrice());
+	    System.out.println("File Name: " + vo.getFileName());
+	    System.out.println("Product No: " + vo.getProdNo());
+	    
+		Connection con = DBUtil.getConnection();
+
+		String sql = "update PRODUCT set PROD_NAME=?,PROD_DETAIL=?,MANUFACTURE_DAY=?,PRICE=?,IMAGE_FILE=? where PROD_NO=?";
+		
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		pStmt.setString(1, vo.getProdName());
+		pStmt.setString(2, vo.getProdDetail());
+		pStmt.setString(3, vo.getManuDate());
+		pStmt.setInt(4,vo.getPrice());
+		pStmt.setString(5, vo.getFileName());
+		pStmt.setInt(6,vo.getProdNo());
+
+		System.out.println("Executing SQL: " + sql);
+		System.out.println("Product No: " + vo.getProdNo());
+		
+		int result = pStmt.executeUpdate();
+		System.out.println("updateProduct - executeUdate result : " + result);
+		
+		pStmt.close();
+		con.close();
+	}
+	
+	// 게시판 Page 처리를 위한 전체 Row(totalCount)  return
+	private int getTotalCount(String sql) throws Exception {
+		
+		sql = "SELECT COUNT(*) "+
+		          "FROM ( " +sql+ ") countTable";
+		
+		Connection con = DBUtil.getConnection();
+		PreparedStatement pStmt = con.prepareStatement(sql);
+		ResultSet rs = pStmt.executeQuery();
+		
+		int totalCount = 0;
+		if( rs.next() ){
+			totalCount = rs.getInt(1);  //CONT(*) 
+		}
+		
+		pStmt.close();
+		con.close();
+		rs.close();
+		
+		return totalCount;
+	}
+	
+	// 게시판 currentPage Row 만  return 
+	private String makeCurrentPageSql(String sql , Search search){
+		sql = 	"SELECT * "+ 
+					"FROM (		SELECT inner_table. * ,  ROWNUM AS row_seq " +
+									" 	FROM (	"+sql+" ) inner_table "+
+									"	WHERE ROWNUM <="+search.getCurrentPage()*search.getPageSize()+" ) " +
+					"WHERE row_seq BETWEEN "+((search.getCurrentPage()-1)*search.getPageSize()+1) +" AND "+search.getCurrentPage()*search.getPageSize();
+		
+		System.out.println("ProductDAO :: make SQL :: "+ sql);	
+		
+		return sql;
+	}
+}
+
+
+
+
+package com.model2.mvc.common;
+
+
+//==>리스트화면을 모델링(추상화/캡슐화)한 Bean 
+public class Search {
+	
+	///Field
+	private int currentPage;
+	private String searchCondition;
+	private String searchKeyword;
+	private int pageSize;
+	//==> 리스트화면 currentPage에 해당하는 회원정보를 ROWNUM 사용 SELECT 위해 추가된 Field 
+	//==> UserMapper.xml 의 
+	//==> <select  id="getUserList"  parameterType="search"	resultMap="userSelectMap">
+	//==> 참조
+	private int endRowNum;
+	private int startRowNum;
+	
+	///Constructor
+	public Search() {
+	}
+	
+	///Method
+	public int getPageSize() {
+		return pageSize;
+	}
+	public void setPageSize(int paseSize) {
+		this.pageSize = paseSize;
+	}
+	
+	public int getCurrentPage() {
+		return currentPage;
+	}
+	public void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
+	}
+
+	public String getSearchCondition() {
+		return searchCondition;
+	}
+	public void setSearchCondition(String searchCondition) {
+		this.searchCondition = searchCondition;
+	}
+	
+	public String getSearchKeyword() {
+		return searchKeyword;
+	}
+	public void setSearchKeyword(String searchKeyword) {
+		this.searchKeyword = searchKeyword;
+	}
+	
+	//==> Select Query 시 ROWNUM 마지막 값 
+	public int getEndRowNum() {
+		return getCurrentPage()*getPageSize();
+	}
+	//==> Select Query 시 ROWNUM 시작 값
+	public int getStartRowNum() {
+		return (getCurrentPage()-1)*getPageSize()+1;
+	}
+
+	@Override
+	public String toString() {
+		return "Search [currentPage=" + currentPage + ", searchCondition="
+				+ searchCondition + ", searchKeyword=" + searchKeyword
+				+ ", pageSize=" + pageSize + ", endRowNum=" + endRowNum
+				+ ", startRowNum=" + startRowNum + "]";
+	}
+}
