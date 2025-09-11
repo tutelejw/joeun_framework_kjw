@@ -1,68 +1,54 @@
 package com.model2.mvc.service.product.impl;
 
 import java.util.List;
-import java.util.Map;
-import java.util.HashMap;
 
 import org.apache.ibatis.session.SqlSession;
 import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Repository;
 
-import com.model2.mvc.service.domain.Product;
 import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.Product;
+import com.model2.mvc.service.domain.User;
 import com.model2.mvc.service.product.ProductDao;
 
-@Repository("productDao")
-public class ProductDaoImpl implements ProductDao {
 
-    @Autowired
-    private SqlSession sqlSession;
+//==> 상품관리 DAO CRUD 구현
+@Repository("productDaoImpl")
+public class ProductDaoImpl implements ProductDao{
+	
+	///Field
+	@Autowired
+	@Qualifier("sqlSessionTemplate")
+	private SqlSession sqlSession;
+	public void setSqlSession(SqlSession sqlSession) {
+		this.sqlSession = sqlSession;
+	}
+	
+	///Constructor
+	public ProductDaoImpl() {
+		System.out.println(this.getClass());
+	}
 
-    public ProductDaoImpl() {
-        System.out.println("==> " + getClass() + " 생성자 호출");
-    }
+	///Method
+	public void addProduct(Product product) throws Exception {
+		sqlSession.insert("ProductMapper.addProduct", product);
+	}
 
-    public void setSqlSession(SqlSession sqlSession) {
-        System.out.println("==> setSqlSession 호출됨");
-        this.sqlSession = sqlSession;
-    }
+	public Product getProduct(int prodNo) throws Exception {
+		return sqlSession.selectOne("ProductMapper.getProduct", prodNo);
+	}
+	
+	public void updateProduct(Product product) throws Exception {
+		sqlSession.update("ProductMapper.updateProduct", product);
+	}
 
-    @Override
-    public void addProduct(Product product) throws Exception {
-        int result = sqlSession.insert("ProductMapper.insertProduct", product);
-        System.out.println("==> insertProduct 실행 결과 : " + result);
-    }
+	public List<Product> getProductList(Search search) throws Exception {
+		return sqlSession.selectList("ProductMapper.getProductList", search);
+	}
 
-    @Override
-    public Product findProduct(String prodNo) throws Exception {
-        Product product = sqlSession.selectOne("ProductMapper.findProduct", prodNo);
-        System.out.println("==> findProduct 결과 : " + product);
-        return product;
-    }
-
-    @Override
-    public int getTotalCount(Search search) throws Exception {
-        int count = sqlSession.selectOne("ProductMapper.getTotalCount", search);
-        System.out.println("==> getTotalCount 결과 : " + count);
-        return count;
-    }
-
-    @Override
-    public Map<String, Object> getProductList(Search search) throws Exception {
-        List<Product> list = sqlSession.selectList("ProductMapper.getProductList", search);
-        int totalCount = getTotalCount(search);
-
-        Map<String, Object> map = new HashMap<>();
-        map.put("list", list);
-        map.put("totalCount", totalCount);
-
-        System.out.println("==> getProductList 결과 : " + list.size() + "건, totalCount=" + totalCount);
-        return map;
-    }
-
-    @Override
-    public void updateProduct(Product product) throws Exception {
-        int result = sqlSession.update("ProductMapper.updateProduct", product);
-        System.out.println("==> updateProduct 실행 결과 : " + result);
-    }
+	// 게시판 Page 처리를 위한 전체 Row(totalCount)  return
+	public int getTotalCount(Search search) throws Exception {
+		return sqlSession.selectOne("ProductMapper.getTotalCount", search);
+	}
 }
