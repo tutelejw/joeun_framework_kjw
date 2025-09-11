@@ -113,9 +113,9 @@
     SET
       PROD_NAME = #{prodName, jdbcType=VARCHAR},
       PROD_DETAIL = #{prodDetail, jdbcType=VARCHAR},
-      MANUFACTURE_DAY = #{manuDate, jdbcType=VARCHAR},
+      MANUFACTURE_DAY = #{manuDay, jdbcType=VARCHAR},
       PRICE = #{price, jdbcType=INTEGER},
-      IMAGE_FILE = #{fileName, jdbcType=VARCHAR}
+      IMAGE_FILE = #{imageFile, jdbcType=VARCHAR}
     WHERE PROD_NO = #{prodNo, jdbcType=INTEGER}
   </update>
 
