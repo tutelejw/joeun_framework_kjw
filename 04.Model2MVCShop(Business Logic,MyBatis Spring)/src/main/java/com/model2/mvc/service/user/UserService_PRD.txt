@@ -1,0 +1,14 @@
+Spring + MyBatis 기반 프로젝트에서 Service 인터페이스(UserService.java)를 작성하려고 해.
+아래 조건에 맞게 만들어줘.
+
+[작성 조건]
+1. 패키지 경로: com.model2.mvc.service.user
+2. 인터페이스명: UserService
+3. 제공할 메서드 (DAO와 매칭)
+   - int addUser(User user) throws Exception
+   - User getUser(String userId) throws Exception
+   - int updateUser(User user) throws Exception
+   - int deleteUser(String userId) throws Exception
+   - List<User> getUserList(Search search) throws Exception
+   - int getTotalCount(Search search) throws Exception
+4. User 및 Search 객체는 이미 존재한다고 가정

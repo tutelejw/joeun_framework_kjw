@@ -1,3 +1,89 @@
+Spring + MyBatis 기반 프로젝트에서 DAO 구현체를 작성하려고 해.
+아래 자료를 참고해서 ProductDaoImpl.java ProductServiceImpl.java파일을 만들어줘.
+
+[참고 파일]
+- ProductDao.java : Product 관련 DAO 인터페이스
+- ProductService.java : Product 서비스 계층 인터페이스
+- ProductMapper.xml : Product 테이블에 대한 MyBatis SQL 매퍼(XML)
+
+[작성 조건]
+1. 패키지 경로는 반드시 다음과 같이 해줘:
+   package com.model2.mvc.service.product.impl;
+
+2. 클래스명: ProductDaoImpl
+   - ProductDao 인터페이스를 implements 해야 함.
+
+3. MyBatis SqlSession 주입
+   - Spring 환경에서 @Autowired로 SqlSession 주입받기
+   - SqlSessionTemplate 또는 SqlSession 사용 가능
+
+4. 메서드 동작
+   - add INSERT 실행 후 영향을 받은 행 수(int) 리턴
+   - find SELECT 실행 후 객체 리턴
+   - update UPDATE 실행 후 영향을 받은 행 수 리턴
+   - del DELETE 실행 후 영향을 받은 행 수 리턴
+   - List SELECT 실행 후 List<객체> 리턴
+   - getTotalCount(Search search) → SELECT 실행 후 int 리턴
+
+5. 디버깅 목적
+   - 생성자 호출 시 System.out.println("==> " + getClass() + " 생성자 호출");
+   - setter 호출 시에도 로그 출력
+   - 각 메서드 실행 시 SQL 실행 결과(affected rows, 조회 결과 등) 출력
+
+6. 모든 메서드는 `throws Exception` 선언 (교육용으로 try-catch 생략)
+
+7. 코드 스타일
+   - @Repository("productDao") 애노테이션 붙이기
+   - MyBatis 매퍼의 namespace는 "ProductMapper" 사용
+   - sqlSession.insert("ProductMapper.addProduct", product) 형식으로 호출
+   - INSERT, UPDATE, DELETE는 실행 후 반환값을 변수에 담아 로그 출력
+   - SELECT는 결과 객체/리스트를 변수에 담아 로그 출력
+   
+   
+   
+package com.model2.mvc.service.product;
+
+import java.util.Map;
+import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.Product;
+
+public interface ProductDao {
+
+    public void insertProduct(Product product) throws Exception;
+
+    public Product findProduct(String prodNo) throws Exception;
+
+    public int getTotalCount(Search search) throws Exception;
+
+    public Map<String, Object> getProductList(Search search) throws Exception;
+
+    public void updateProduct(Product product) throws Exception;
+}
+
+
+
+
+package com.model2.mvc.service.product;
+
+import java.util.Map;
+import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.Product;
+
+public interface ProductService {
+    
+    public void addProduct(Product product) throws Exception;
+
+    public Product getProduct(int prodNo) throws Exception;
+
+    public Map<String, Object> getProductList(Search search) throws Exception;
+
+    public void updateProduct(Product product) throws Exception;
+
+    public int getTotalCount(Search search) throws Exception; // 👈 추가 가능
+}
+
+
+
 <?xml version="1.0" encoding="UTF-8" ?>
 <!DOCTYPE mapper
   PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"

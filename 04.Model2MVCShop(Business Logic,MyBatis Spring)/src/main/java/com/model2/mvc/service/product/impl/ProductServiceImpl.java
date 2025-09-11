@@ -1,61 +1,60 @@
 package com.model2.mvc.service.product.impl;
 
-import java.util.HashMap;
-import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
-import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.stereotype.Service;
 
-import com.model2.mvc.common.Search;
 import com.model2.mvc.service.domain.Product;
+import com.model2.mvc.common.Search;
 import com.model2.mvc.service.product.ProductDao;
-import com.model2.mvc.service.product.ProductService;;
+import com.model2.mvc.service.product.ProductService;
 
+@Service("productService")
+public class ProductServiceImpl implements ProductService {
 
-//==> 회원관리 서비스 구현
-@Service("productServiceImpl")
-public class ProductServiceImpl implements ProductService{
-	
-	///Field
-	@Autowired
-	@Qualifier("productDaoImpl")
-	private ProductDao productDao;
-	public void setProductDao(ProductDao productDao) {
-		this.productDao = productDao;
-	}
-	
-	///Constructor
-	public ProductServiceImpl() {
-		System.out.println(this.getClass());
-	}
+    @Autowired
+    private ProductDao productDao;
 
-	///Method
-	public void addProduct(Product product) throws Exception {
-		productDao.addProduct(product);
-	}
+    public ProductServiceImpl() {
+        System.out.println("==> " + getClass() + " 생성자 호출");
+    }
 
-	public Product getProduct(int prodNo) throws Exception {
-		return productDao.getProduct(prodNo);
-	}
+    public void setProductDao(ProductDao productDao) {
+        System.out.println("==> setProductDao 호출됨");
+        this.productDao = productDao;
+    }
 
-	public Map<String , Object > getProductList(Search search) throws Exception {
-		List<Product> list= productDao.getProductList(search);
-		int totalCount = productDao.getTotalCount(search);
-		
-		Map<String, Object> map = new HashMap<String, Object>();
-		map.put("list", list );
-		map.put("totalCount", new Integer(totalCount));
-		
-		return map;
-	}
+    @Override
+    public void addProduct(Product product) throws Exception {
+        productDao.addProduct(product);
+        System.out.println("==> addProduct 완료");
+    }
 
-	public void updateProduct(Product product) throws Exception {
-		productDao.updateProduct(product);
-	}
+    @Override
+    public Product getProduct(int prodNo) throws Exception {
+        Product product = productDao.findProduct(String.valueOf(prodNo));
+        System.out.println("==> getProduct 결과 : " + product);
+        return product;
+    }
 
-	public int getTotalCount(Search search) throws Exception {
-		return productDao.getTotalCount(search);
-	}
+    @Override
+    public Map<String, Object> getProductList(Search search) throws Exception {
+        Map<String, Object> map = productDao.getProductList(search);
+        System.out.println("==> getProductList 결과 Map : " + map);
+        return map;
+    }
+
+    @Override
+    public void updateProduct(Product product) throws Exception {
+        productDao.updateProduct(product);
+        System.out.println("==> updateProduct 완료");
+    }
+
+    @Override
+    public int getTotalCount(Search search) throws Exception {
+        int count = productDao.getTotalCount(search);
+        System.out.println("==> getTotalCount in Service : " + count);
+        return count;
+    }
 }

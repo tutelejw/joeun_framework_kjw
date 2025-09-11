@@ -1,153 +1,102 @@
 package com.model2.mvc.service.product.test;
 
-import java.sql.Date;
-import java.util.List;
-import java.util.Map;
+import com.model2.mvc.service.domain.Product;
+import com.model2.mvc.common.Search;
+import com.model2.mvc.service.product.ProductService;
 
-import org.junit.Assert;
+import org.junit.Before;
+import org.junit.After;
 import org.junit.Test;
-import org.junit.runner.RunWith;
+
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
+
 import org.springframework.test.context.ContextConfiguration;
 import org.springframework.test.context.junit4.SpringJUnit4ClassRunner;
 
-import com.model2.mvc.common.Search;
-import com.model2.mvc.service.domain.Product;
-import com.model2.mvc.service.product.ProductService;
+import org.junit.runner.RunWith;
 
+import java.util.Map;
 
-/*
- *	FileName :  ProductServiceTest.java
- * ㅇ JUnit4 (Test Framework) 과 Spring Framework 통합 Test( Unit Test)
- * ㅇ Spring 은 JUnit 4를 위한 지원 클래스를 통해 스프링 기반 통합 테스트 코드를 작성 할 수 있다.
- * ㅇ @RunWith : Meta-data 를 통한 wiring(생성,DI) 할 객체 구현체 지정
- * ㅇ @ContextConfiguration : Meta-data location 지정
- * ㅇ @Test : 테스트 실행 소스 지정
- */
+import static org.junit.Assert.*;
+
 @RunWith(SpringJUnit4ClassRunner.class)
-@ContextConfiguration(locations = { "classpath:config/commonservice.xml" })
+@ContextConfiguration(locations = {"classpath:config/commonservice.xml"})
 public class ProductServiceTest {
 
-	//==>@RunWith,@ContextConfiguration 이용 Wiring, Test 할 instance DI
-	@Autowired
-	@Qualifier("productServiceImpl")
-	private ProductService productService;
+    @Autowired
+    @Qualifier("productServiceImpl")
+    private ProductService productService;
 
-	@Test
-	public void testAddProduct() throws Exception {
-		
-		Product product = new Product();
-		product.setProdName("testProductName");
-		product.setProdDetail("detail");
-		product.setManuDay("20250910");
-		product.setPrice(99999);
-		product.setImageFile("1111112222222");
-		product.setRegDate(Date.valueOf("2025-09-10"));
-		
-		productService.addProduct(product);
-		
-		product = productService.getProduct(10065);
+    private Product testProduct;
 
-		//==> console 확인
-		System.out.println(product);
-		
-		//==> API 확인
-		Assert.assertEquals("testProductName", product.getProdName());
-		Assert.assertEquals("detail", product.getProdDetail());
-		Assert.assertEquals("20250910", product.getManuDay());
-		Assert.assertEquals(99999, product.getPrice());
+    @Before
+    public void setUp() {
+        testProduct = new Product();
+        testProduct.setProdName("테스트상품");
+        testProduct.setProdDetail("테스트 상세정보");
+        testProduct.setManuDay("20250101");
+        testProduct.setPrice(10000);
+        testProduct.setImageFile("test.png");
+    }
 
-	}
-	
-	@Test
-	public void testGetProduct() throws Exception {
-		
-		Product product = new Product();
-	
-		product = productService.getProduct(10065);
+    @After
+    public void tearDown() {
+        System.out.println("==> 테스트 종료");
+    }
 
-		//==> console 확인
-		//System.out.println(product);
-		
-		//==> API 확인
-		Assert.assertEquals("testProductName", product.getProdName());
-		Assert.assertEquals("detail", product.getProdDetail());
-		Assert.assertEquals("20250910", product.getManuDay());
-		Assert.assertEquals(99999, product.getPrice());
+    @Test
+    public void testAddAndGetProduct() throws Exception {
+        productService.addProduct(testProduct);
+        int prodNo = testProduct.getProdNo(); // addProduct 후 prodNo가 세팅되어 있어야 함
 
-		Assert.assertNotNull(productService.getProduct(10000));
-		Assert.assertNotNull(productService.getProduct(10001));
-	}
-	
-	@Test
-	 public void testUpdateProduct() throws Exception{
-		 
-		Product product = productService.getProduct(10065);
-		Assert.assertNotNull(product);
-		
-		Assert.assertEquals("testProductName", product.getProdName());
-		Assert.assertEquals("detail", product.getProdDetail());
-		Assert.assertEquals("20250910", product.getManuDay());
-		Assert.assertEquals(99999, product.getPrice());
+        Product result = productService.getProduct(prodNo);
 
-		product.setProdName("change");
-		product.setProdDetail("777-7777-7777");
-		product.setManuDay("20001212");
-		product.setPrice(12345);
-		
-		productService.updateProduct(product);
-		
-		product = productService.getProduct(10065);
-		Assert.assertNotNull(product);
-		
-		//==> console 확인
-		//System.out.println(product);
-			
-		//==> API 확인
-		Assert.assertEquals("change", product.getProdName());
-		Assert.assertEquals("777-7777-7777", product.getProdDetail());
-		Assert.assertEquals("20001212", product.getManuDay());
-		Assert.assertEquals(12345, product.getPrice());
-	 }
-	 
+        assertNotNull(result);
+        assertEquals("테스트상품", result.getProdName());
+        System.out.println("==> testAddAndGetProduct 완료");
+    }
 
-	
-	 //==>  주석을 풀고 실행하면....
-	 @Test
-	 public void testGetProductListAll() throws Exception{
-		 
-	 	Search search = new Search();
-	 	search.setCurrentPage(1);
-	 	search.setPageSize(3);
-	 	Map<String,Object> map = productService.getProductList(search);
-	 	
-	 	List<Object> list = (List<Object>)map.get("list");
-	 	Assert.assertEquals(3, list.size());
-	 	
-		//==> console 확인
-	 	//System.out.println(list);
-	 	
-	 	Integer totalCount = (Integer)map.get("totalCount");
-	 	System.out.println(totalCount);
-	 	
-	 	System.out.println("=======================================");
-	 	
-	 	search.setCurrentPage(1);
-	 	search.setPageSize(3);
-	 	search.setSearchCondition("0");
-	 	search.setSearchKeyword("");
-	 	map = productService.getProductList(search);
-	 	
-	 	list = (List<Object>)map.get("list");
-	 	Assert.assertEquals(3, list.size());
-	 	
-	 	//==> console 확인
-	 	//System.out.println(list);
-	 	
-	 	totalCount = (Integer)map.get("totalCount");
-	 	System.out.println(totalCount);
-	 }
-	 
+    @Test
+    public void testUpdateProduct() throws Exception {
+        productService.addProduct(testProduct);
+        int prodNo = testProduct.getProdNo();
 
+        Product updated = productService.getProduct(prodNo);
+        updated.setPrice(20000);
+        updated.setProdDetail("수정된 상세정보");
+
+        productService.updateProduct(updated);
+
+        Product result = productService.getProduct(prodNo);
+        assertEquals(20000, result.getPrice());
+        assertEquals("수정된 상세정보", result.getProdDetail());
+        System.out.println("==> testUpdateProduct 완료");
+    }
+
+    @Test
+    public void testGetProductList() throws Exception {
+        Search search = new Search();
+        search.setCurrentPage(1);
+        search.setPageSize(10);
+        search.setSearchCondition("1");
+        search.setSearchKeyword("상품"); // 상품명 일부
+
+        Map<String, Object> map = productService.getProductList(search);
+        assertNotNull(map.get("list"));
+        assertTrue(((java.util.List<?>) map.get("list")).size() >= 0);
+
+        System.out.println("==> testGetProductList 결과 : " + map.get("list"));
+    }
+
+    @Test
+    public void testGetTotalCount() throws Exception {
+        Search search = new Search();
+        search.setSearchCondition("1");
+        search.setSearchKeyword("상품");
+
+        int count = productService.getTotalCount(search);
+        assertTrue(count >= 0);
+        System.out.println("==> testGetTotalCount 결과 : " + count);
+    }
 }

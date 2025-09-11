@@ -1,6 +1,6 @@
-프롬프트: “users, product, transaction 테이블에 맞는 Java DTO 클래스(Purchase)를 생성해줘.”
-주요테이블은 transaction 이야 
-결과: Purchase.java
+프롬프트: “users, product, transaction 테이블에 맞는 Java DTO 클래스(Product)를 생성해줘.”
+주요테이블은 product 이야 
+결과: Product.java
  
 CREATE SEQUENCE seq_product_prod_no	 	   INCREMENT BY 1 START WITH 10000;
 CREATE SEQUENCE seq_transaction_tran_no	   INCREMENT BY 1 START WITH 10000;
