@@ -13,11 +13,16 @@ public class Product {
 	private int price;
 	private String imageFile;
 	private Date regDate;
+	private String proTranCode;
 	
 	///Constructor
 	public Product() {
 	}
 	///Method 
+	
+	public String getProTranCode() { return proTranCode;}
+	public void setProTranCode(String proTranCode) {this.proTranCode=proTranCode;}
+	
 	public int getProdNo() {		return prodNo;	}
 	public void setProdNo(int prodNo) {		this.prodNo=prodNo;	}
 	
@@ -40,6 +45,6 @@ public class Product {
 		
 	@Override
 	public String toString() {
-		return "User Domain : " + prodNo + " / " +  prodName + " / " +  manuDay + " / " +  price + " / " +  imageFile + " / " + regDate ;
+		return "Product Domain : " +getClass().getSimpleName() + " :: " + prodNo + " / " +  prodName + " / " +  manuDay + " / " +  price + " / " +  imageFile + " / " + regDate ;
 	}
 	}

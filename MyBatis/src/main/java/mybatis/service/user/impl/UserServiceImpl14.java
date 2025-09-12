@@ -27,12 +27,26 @@ public class UserServiceImpl14 implements UserService {
         this.userDao = userDao;
     }
 
-    @Override
-    public int addUser(User user) throws Exception {
-        System.out.println(":: "+getClass().getName()+".addUser() 호출");
-        return userDao.addUser(user);
-    }
+//    @Override
+//    public int addUser(User user) throws Exception {
+//        System.out.println(":: "+getClass().getName()+".addUser() 호출");
+//        return userDao.addUser(user);
+//    }
 
+  public int addUser(User user) throws Exception {
+	  int result = 0;
+	  System.out.println(">>>>>>>>>1번째 insert ===============");
+	  result = userDao.addUser(user);
+	  System.out.println(">>>>>>>>>1번째 insert 결과 "  + result);
+	  System.out.println(">>>>>>>>>2번째 insert ===============");
+	  result = userDao.addUser(user);
+	  System.out.println(">>>>>>>>>2번째 insert 결과 "  + result);
+	  System.out.println(">>>>>>>>>결과는");
+//	  System.out.println(":: "+getClass().getName()+".addUser() 호출");
+  return 0;
+}
+
+    
     @Override
     public User getUser(String userId) throws Exception {
         System.out.println(":: "+getClass().getName()+".getUser() 호출");

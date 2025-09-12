@@ -78,7 +78,23 @@ public class ProductServiceTest {
     }
 
     @Test
-    public void testGetProductList() throws Exception {
+    public void testGetProductList0() throws Exception {
+        Search search = new Search();
+        search.setCurrentPage(1);
+        search.setPageSize(10);
+        search.setSearchCondition("0");
+        search.setSearchKeyword("1008"); // 상품번호 일부
+
+        Map<String, Object> map = productService.getProductList(search);
+        assertNotNull(map.get("list"));
+        assertTrue(((java.util.List<?>) map.get("list")).size() >= 0);
+        System.out.println("map get : " + map.get("list"));
+        System.out.println("==> testGetProductList 상품번호 결과 : " + map.get("list"));
+    }
+
+    
+    @Test
+    public void testGetProductList1() throws Exception {
         Search search = new Search();
         search.setCurrentPage(1);
         search.setPageSize(10);
@@ -89,10 +105,11 @@ public class ProductServiceTest {
         assertNotNull(map.get("list"));
         assertTrue(((java.util.List<?>) map.get("list")).size() >= 0);
         System.out.println("map get : " + map.get("list"));
-        System.out.println("==> testGetProductList 결과 : " + map.get("list"));
+        System.out.println("==> testGetProductList 상품명 결과 : " + map.get("list"));
     }
+    
 
-    //@Test
+    @Test
     public void testGetTotalCount() throws Exception {
         Search search = new Search();
         search.setSearchCondition("1");

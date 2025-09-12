@@ -13,10 +13,10 @@ COLUMN RECEIVER_PHONE   FORMAT A14;
 -- 컬럼 포맷 설정
 COLUMN prod_no        FORMAT 999999        HEADING '상품번호'
 COLUMN prod_name      FORMAT A20           HEADING '상품명'
-COLUMN prod_detail    FORMAT A20           HEADING '상품설명'
+COLUMN prod_detail    FORMAT A27           HEADING '상품설명'
 COLUMN manufacture_day FORMAT A12          HEADING '제조일자'
 COLUMN price          FORMAT 9,999,999   HEADING '가격'
-COLUMN image_file     FORMAT A10           HEADING '이미지파일'
+COLUMN image_file     FORMAT A20           HEADING '이미지파일'
 COLUMN reg_date       FORMAT A15           HEADING '등록일'
 
 
