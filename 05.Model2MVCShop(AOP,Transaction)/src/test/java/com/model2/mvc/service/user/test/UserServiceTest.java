@@ -163,6 +163,7 @@ public class UserServiceTest {
 	 	search.setPageSize(3);
 	 	Map<String,Object> map = userService.getUserList(search);
 	 	
+	 	@SuppressWarnings("unchecked")
 	 	List<Object> list = (List<Object>)map.get("list");
 	 	Assert.assertEquals(3, list.size());
 	 	
@@ -180,6 +181,7 @@ public class UserServiceTest {
 	 	search.setSearchKeyword("");
 	 	map = userService.getUserList(search);
 	 	
+	 	//@SuppressWarnings("unchecked")
 	 	list = (List<Object>)map.get("list");
 	 	Assert.assertEquals(3, list.size());
 	 	
