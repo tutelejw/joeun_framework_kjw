@@ -1,0 +1,74 @@
+=================================================
+PRD : Product Requirement Document : 제품요구서 작성 : ???
+--------------------------------------------------
+-- 용어에 익숙해지자 
+: 구현요구사항을 AI 에 전달 하는 skill 을 익힘.
+: 요구사항을 정확히 지시 : Prompt Detail
+: 직접 지시가 아니라 AI 와 협업 
+   예> 이렇게 하려면 어떻게 해야해 ? 
+         : 난 알고 있지만. AI 가 생각하고 해결 할 수 있도록
+
+: Low-code / Prompt Engineering / Ai-assisted coding
+=================================================
+
+
+##### User001Controller
+
+0. Controller coding Convention
+- @RequestMappting 사용
+- ModelAndView Return
+
+1. View JSP  위치 : user01 폴더
+user01/home.jsp
+user01/logon.jsp
+user01/logonAction.jsp
+user01/logout.jsp
+
+2. User001Controller 구현
+
+/logon.do  : user01/logon.jsp 로 단순 화면이동
+/home.do  : user01/home.jsp 로 단순 화면이동
+/logonAction.do  : user01/logonAction.jsp 로 단순 화면이동
+/logout.do  : user01/logout.jsp 로 단순 화면이동
+
+
+
+
+#####
+package spring.web.user;
+
+import org.springframework.stereotype.Controller;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.servlet.ModelAndView;
+
+@Controller
+public class User001Controller {
+
+    public User001Controller() {
+        System.out.println(":: User001Controller default constructor call");
+    }
+
+    // /logon.do -> user01/logon.jsp
+    @RequestMapping("/logon.do")
+    public ModelAndView logon() {
+        return new ModelAndView("user01/logon.jsp");
+    }
+
+    // /home.do -> user01/home.jsp
+    @RequestMapping("/home.do")
+    public ModelAndView home() {
+        return new ModelAndView("user01/home.jsp");
+    }
+
+    // /logonAction.do -> user01/logonAction.jsp
+    @RequestMapping("/logonAction.do")
+    public ModelAndView logonAction() {
+        return new ModelAndView("user01/logonAction.jsp");
+    }
+
+    // /logout.do -> user01/logout.jsp
+    @RequestMapping("/logout.do")
+    public ModelAndView logout() {
+        return new ModelAndView("user01/logout.jsp");
+    }
+}
