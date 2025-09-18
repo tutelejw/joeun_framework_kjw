@@ -11,9 +11,9 @@
 		<result property="prodNo" 		column="prod_no" 			jdbcType="INTEGER"/>
 		<result property="prodName"	 column="prod_name" 	jdbcType="VARCHAR" />
 		<result property="prodDetail"  column="prod_detail" 		jdbcType="VARCHAR" />
-		<result property="manuDay" 	column="manufacture_day" 	jdbcType="VARCHAR" />
+		<result property="manuDate" 	column="manufacture_day" 	jdbcType="VARCHAR" />
 		<result property="price" 			column="price" 					jdbcType="INTEGER" />
-		<result property="imageFile" 	column="image_file" 		jdbcType="VARCHAR" />
+		<result property="fileName" 	column="image_file" 		jdbcType="VARCHAR" />
 		<result property="regDate" 	column="reg_date" 			jdbcType="DATE" />
 	</resultMap>
 	
@@ -22,7 +22,7 @@
 	 	INSERT  INTO product
 	 	( prod_no ,prod_name, prod_detail, manufacture_day, price,image_file, reg_date) 
 		VALUES	 
-		( seq_product_prod_no.NEXTVAL, #{prodName}, #{prodDetail}, #{manuDay}, #{price}, #{imageFile}, SYSDATE )
+		( seq_product_prod_no.NEXTVAL, #{prodName}, #{prodDetail}, #{manuDate}, #{price}, #{fileName}, SYSDATE )
 	 </insert>
 	 
 	 <!-- SQL : SELECT ONE -->
@@ -39,9 +39,9 @@
 	   	<set>
 	   		prod_name 	= #{prodName} ,
 			prod_detail	= #{prodDetail},
-			manufacture_day 				= #{manuDay} ,
+			manufacture_day 				= #{manuDate} ,
 			price				=	#{price},
-			image_file	=	#{imageFile},
+			image_file	=	#{fileName},
 			reg_date	= #{regDate}
 	   	</set>
 	   	WHERE prod_No = #{prodNo}

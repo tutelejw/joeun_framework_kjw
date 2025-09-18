@@ -3,6 +3,7 @@ package com.model2.mvc.web.product;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
 
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
@@ -55,11 +56,20 @@ public class ProductController {
 	@RequestMapping("/addProduct.do")
 	public String addProduct( @ModelAttribute("product") Product product ) throws Exception {
 
-		System.out.println("/addProduct.do");
+	    System.out.println("=========== /ProductController.addProduct.do 호출됨 ===========");
+
+	    // 🧪 디버깅 로그 출력: 입력된 product 정보 확인
+	    System.out.println("▶ 상품번호 (prodNo): " + product.getProdNo());
+	    System.out.println("▶ 상품명 (prodName): " + product.getProdName());
+	    System.out.println("▶ 상품상세정보 (prodDetail): " + product.getProdDetail());
+	    System.out.println("▶ 제조일자 (manuDate): " + product.getManuDate());
+	    System.out.println("▶ 가격 (price): " + product.getPrice());
+	    System.out.println("▶ 상품이미지 (fileName): " + product.getFileName());
 		//Business Logic
 		productService.addProduct(product);
 		
-		return "redirect:/product/loginView.jsp";
+		//return "redirect:/product/productView.jsp";
+		return "forward:/product/addProductView.jsp";
 	}
 	
 	@RequestMapping("/getProduct.do")
@@ -74,33 +84,37 @@ public class ProductController {
 		return "forward:/product/getProduct.jsp";
 	}
 	
-//	@RequestMapping("/updateProductView.do")
-//	public String updateProductView( @RequestParam("prodNo") String prodNo , Model model ) throws Exception{
-//
-//		System.out.println("/updateProductView.do");
-//		//Business Logic
-//		Product product = productService.getProduct(prodNo);
-//		// Model 과 View 연결
-//		model.addAttribute("product", product);
-//		
-//		return "forward:/product/updateProduct.jsp";
-//	}
-//	
-//	@RequestMapping("/updateProduct.do")
-//	public String updateProduct( @ModelAttribute("product") Product product , Model model , HttpSession session) throws Exception{
-//
-//		System.out.println("/updateProduct.do");
-//		//Business Logic
-//		productService.updateProduct(product);
-//		
-//		String sessionId=((Product)session.getAttribute("product")).getProductId();
-//		if(sessionId.equals(product.getProductId())){
-//			session.setAttribute("product", product);
-//		}
-//		
-//		return "redirect:/getProduct.do?prodNo="+user.getProductId();
-//	}
-//	
+	@RequestMapping("/updateProductView.do")
+//	public String updateProductView( @RequestParam("prodNo") int prodNo , Model model ) throws Exception{
+	public String updateProductView( int prodNo , Model model, HttpSession session) throws Exception{
+
+		System.out.println("/updateProductView.do");
+		//Business Logic
+		Product product = productService.getProduct(prodNo); 
+		// Model 과 View 연결
+		model.addAttribute("product", product);
+		session.setAttribute("product", product);  // ✅ 세션에도 저장!
+
+		return "forward:/product/updateProduct.jsp";
+	}
+	
+	@RequestMapping("/updateProduct.do")
+	public String updateProduct( @ModelAttribute("product") Product product , Model model , HttpSession session) throws Exception{
+
+		System.out.println("/updateProduct.do");
+		//Business Logic
+		productService.updateProduct(product);
+		
+		//String sessionId=String.valueOf(((Product)session.getAttribute("product")).getProdNo());
+		int sessionId=((Product)session.getAttribute("product")).getProdNo();
+//		if(sessionId.equals(product.getProdNo())){
+		if(sessionId == product.getProdNo()){
+			session.setAttribute("product", product);
+		}
+		
+		return "redirect:/getProduct.do?prodNo="+product.getProdNo();
+	}
+	
 	
 	
 	@RequestMapping("/listProduct.do")

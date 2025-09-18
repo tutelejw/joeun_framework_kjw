@@ -9,24 +9,27 @@
 <script type="text/javascript">
 
 	function fncLogin() {
-		var id=document.loginForm.userId.value;
-		var pw=document.loginForm.password.value;
-		if(id == null || id.length <1) {
+		var id = document.loginForm.userId.value;
+		var pw = document.loginForm.password.value;
+
+		if (id == null || id.trim() === "") {
 			alert('ID 를 입력하지 않으셨습니다.');
 			document.loginForm.userId.focus();
-			return;
+			return false;
 		}
-		
-		if(pw == null || pw.length <1) {
+
+		if (pw == null || pw.trim() === "") {
 			alert('패스워드를 입력하지 않으셨습니다.');
 			document.loginForm.password.focus();
-			return;
+			return false;
 		}
-	    document.loginForm.submit();
+
+		// 숨겨진 submit 버튼 클릭 → Enter 키 대응
+		document.getElementById("realSubmit").click();
 	}
-	
-	//Call Back Method 이용 onload 시 Event 처리
-	window.onload = function(){
+
+	// 페이지 로드 시 ID 입력란에 포커스
+	window.onload = function() {
 		document.getElementById("userId").focus();
 	}
 
@@ -77,8 +80,10 @@
                 	<img src="/images/text_id.gif" width="100" height="30"/>
                 </td>
                 <td height="30">
-                  <input 	type="text" name="userId"  class="ct_input_g" 
-                  				style="width:180px; height:19px"  maxLength='50'/>          
+                       
+<input type="text" name="userId" id="userId" class="ct_input_g"
+       style="width:180px; height:19px" maxLength='50'/>
+  
           		</td>
                 <td width="20" height="30">&nbsp;</td>
               </tr>
@@ -97,16 +102,20 @@
                 <td width="30" height="20">&nbsp;</td>
                 <td width="100" height="20">&nbsp;</td>
                 <td height="20" align="center">
-   				    <table width="136" height="20" border="0" cellpadding="0" cellspacing="0">
+   				  <table width="136" height="20" border="0" cellpadding="0" cellspacing="0">
                        <tr> 
                          <td width="56">
+                         	<!-- ★★★ 로그인 버튼 클릭시 fncLogin() 호출 ★★★ -->
                          	<a href="javascript:fncLogin();">
                          		<img src="/images/btn_login.gif" width="56" height="20" border="0"/>
                          	</a>
+                         	
+                         	<!-- ★★★ Enter 키 입력 시 폼 submit 처리 위한 숨겨진 submit 버튼 ★★★ -->
+                         	<input type="submit" id="realSubmit" style="display:none;" />
                          </td>
                          <td width="10">&nbsp;</td>
                          <td width="70">
-                         	<a href="addUserView.jsp;">
+                         	<a href="addUserView.jsp">
                          		<img src="/images/btn_add.gif" width="70" height="20" border="0">
                          	</a>
                          </td>

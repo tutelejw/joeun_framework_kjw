@@ -21,7 +21,7 @@ function fncAddProduct() {
 		alert("이름은  반드시 입력하셔야 합니다.");
 		return;
 	}
-	
+
 	document.detailForm.action='/addProduct.do';
 	document.detailForm.submit();
 }
@@ -102,8 +102,9 @@ function resetData() {
 		</td>
 		<td bgcolor="D6D6D6" width="1"></td>
 		<td class="ct_write01">
-			<input 	type="text" name=manuDate class="ct_input_g" 
+			<input 	type="date" name=manuDate class="ct_input_g" 
 							style="width:100px; height:19px"  maxLength="50" />
+					
 		</td>
 	</tr>
 

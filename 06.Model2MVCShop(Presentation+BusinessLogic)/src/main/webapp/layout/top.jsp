@@ -26,13 +26,14 @@
 	        <tr> 
 	          <td width="115">
 		          <c:if test="${ empty user }">
-		              <a href="/loginView.do" target="rightFrame">login</a>
+<h1 style="font-size: 30px;"><a href="/loginView.do" target="rightFrame">login</a></h1>
+<!-- 		              <a href="/loginView.do" target="rightFrame">login</a> -->
 		           </c:if>   
 	          </td>
 	          <td width="14">&nbsp;</td>
 	          <td width="56">
 		          <c:if test="${ ! empty user }">
-		            	<a href="/logout.do" target="_parent">logout</a>  
+		            	<h1 style="font-size: 30px;"><a href="/logout.do" target="_parent">logout</a></h1>  
 		           </c:if>
 	          </td>
 	        </tr>

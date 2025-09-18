@@ -12,9 +12,9 @@
     <id property="prodNo" column="PROD_NO" jdbcType="INTEGER"/>
     <result property="prodName" column="PROD_NAME" jdbcType="VARCHAR"/>
     <result property="prodDetail" column="PROD_DETAIL" jdbcType="VARCHAR"/>
-    <result property="manuDay" column="MANUFACTURE_DAY" jdbcType="VARCHAR"/>
+    <result property="manuDate" column="MANUFACTURE_DAY" jdbcType="VARCHAR"/>
     <result property="price" column="PRICE" jdbcType="INTEGER"/>
-    <result property="imageFile" column="IMAGE_FILE" jdbcType="VARCHAR"/>
+    <result property="fileName" column="IMAGE_FILE" jdbcType="VARCHAR"/>
     <result property="regDate" column="REG_DATE" jdbcType="DATE"/>
     <result property="proTranCode" column="TRAN_STATUS_TEXT" jdbcType="VARCHAR"/>
   </resultMap>
@@ -27,8 +27,8 @@
     )
     VALUES (
       seq_product_prod_no.NEXTVAL,
-      #{imageFile, jdbcType=VARCHAR},
-      #{manuDay, jdbcType=VARCHAR},
+      #{fileName, jdbcType=VARCHAR},
+      #{manuDate, jdbcType=VARCHAR},
       #{price, jdbcType=INTEGER},
       #{prodDetail, jdbcType=VARCHAR},
       #{prodName, jdbcType=VARCHAR},
@@ -113,9 +113,9 @@
     SET
       PROD_NAME = #{prodName, jdbcType=VARCHAR},
       PROD_DETAIL = #{prodDetail, jdbcType=VARCHAR},
-      MANUFACTURE_DAY = #{manuDay, jdbcType=VARCHAR},
+      MANUFACTURE_DAY = #{manuDate, jdbcType=VARCHAR},
       PRICE = #{price, jdbcType=INTEGER},
-      IMAGE_FILE = #{imageFile, jdbcType=VARCHAR}
+      IMAGE_FILE = #{fileName, jdbcType=VARCHAR}
     WHERE PROD_NO = #{prodNo, jdbcType=INTEGER}
   </update>
 

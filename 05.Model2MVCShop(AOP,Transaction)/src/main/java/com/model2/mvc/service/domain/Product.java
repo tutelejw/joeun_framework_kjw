@@ -9,7 +9,7 @@ public class Product {
 	private int prodNo;
 	private String prodName;
 	private String prodDetail;
-	private String manuDay;
+	private String manuDate;
 	private int price;
 	private String imageFile;
 	private Date regDate;
@@ -31,8 +31,8 @@ public class Product {
 	
 	public String getProdDetail() { return prodDetail; }
 	public void setProdDetail(String prodDetail) {this.prodDetail=prodDetail;}
-	public String getManuDay() { return manuDay; }
-	public void setManuDay(String manuDay) { this.manuDay=manuDay; }
+	public String getManuDate() { return manuDate; }
+	public void setManuDate(String manuDate) { this.manuDate=manuDate; }
 	
 	public int getPrice() { return price; }
 	public void setPrice(int price) {this.price = price; }
@@ -45,6 +45,6 @@ public class Product {
 		
 	@Override
 	public String toString() {
-		return "Product Domain : " +getClass().getSimpleName() + " :: " + prodNo + " / " +  prodName + " / " +  manuDay + " / " +  price + " / " +  imageFile + " / " + regDate ;
+		return "Product Domain : " +getClass().getSimpleName() + " :: " + prodNo + " / " +  prodName + " / " +  manuDate + " / " +  price + " / " +  imageFile + " / " + regDate ;
 	}
 	}

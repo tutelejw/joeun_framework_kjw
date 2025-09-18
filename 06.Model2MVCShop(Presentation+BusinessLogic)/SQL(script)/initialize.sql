@@ -1,4 +1,42 @@
 
+sqlplus scott/tiger
+
+-- 보기 좋게 컬럼 형식 지정
+COLUMN tran_no        FORMAT 999999;
+COLUMN buyer_id       FORMAT A15;
+COLUMN demailaddr     FORMAT A30;
+COLUMN receiver_name  FORMAT A10;
+COLUMN dlvy_request   FORMAT A15;
+COLUMN DEMAILADDR   FORMAT A10;
+COLUMN BUYER_ID   FORMAT A10;
+COLUMN RECEIVER_PHONE   FORMAT A14;
+-- 컬럼 포맷 설정
+COLUMN prod_no        FORMAT 999999   
+COLUMN prod_name      FORMAT A20      
+COLUMN prod_detail    FORMAT A20      
+COLUMN manufacture_day FORMAT A12     
+COLUMN price          FORMAT 9,999,999 
+COLUMN image_file     FORMAT A10       
+COLUMN reg_date       FORMAT A15       
+
+-- auto commit 설정
+SHOW AUTOCOMMIT;
+SET AUTOCOMMIT ON;
+SHOW AUTOCOMMIT;
+
+-- 줄 길이와 페이지 길이 설정
+SET LINESIZE 1000;
+SET PAGESIZE 1000;
+
+select * from users;
+select * from product;
+select * from transaction;
+
+
+
+
+
+
 DROP TABLE transaction;
 DROP TABLE product;
 DROP TABLE users;
@@ -29,12 +67,15 @@ CREATE TABLE product (
 	prod_no 						NUMBER 				NOT NULL,
 	prod_name 				VARCHAR2(100) 	NOT NULL,
 	prod_detail 				VARCHAR2(200),
-	manufacture_day		VARCHAR2(8),
+	manufacture_day		VARCHAR2(10),
 	price 							NUMBER(10),
 	image_file 					VARCHAR2(100),
 	reg_date 					DATE,
 	PRIMARY KEY(prod_no)
 );
+ALTER TABLE PRODUCT
+MODIFY (MANUFACTURE_DAY VARCHAR2(10));
+
 
 CREATE TABLE transaction ( 
 	tran_no 					NUMBER 			NOT NULL,
@@ -138,9 +179,9 @@ SELECT user_id , user_name , email
 FROM users
 ORDER BY user_id
 
-currentPage =2
-pageSize = 3   
-4 ~ 6
+-- currentPage =2
+-- pageSize = 3   
+-- 4 ~ 6
 
 SELECT inner_table. * ,  ROWNUM AS row_seq
 FROM (	SELECT user_id , user_name , email

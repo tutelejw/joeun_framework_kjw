@@ -40,7 +40,7 @@ public class ProductServiceTest {
         testProduct.setProdNo(10042);
         testProduct.setProdName("테스트상품");
         testProduct.setProdDetail("테스트 상세정보");
-        testProduct.setManuDay("20250101");
+        testProduct.setManuDate("20250101");
         testProduct.setPrice(10000);
         testProduct.setImageFile("test.png");
     }
