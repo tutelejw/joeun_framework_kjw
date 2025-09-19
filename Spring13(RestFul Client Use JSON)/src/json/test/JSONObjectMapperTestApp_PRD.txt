@@ -1,0 +1,303 @@
+=================================================
+PRD : Product Requirement Document : 제품요구서 작성 : ???
+--------------------------------------------------
+-- 용어에 익숙해지자 
+: 구현요구사항을 AI 에 전달 하는 skill 을 익힘.
+: 요구사항을 정확히 지시 : Prompt Detail
+: 직접 지시가 아니라 AI 와 협업 
+   예> 이렇게 하려면 어떻게 해야해 ? 
+         : 난 알고 있지만. AI 가 생각하고 해결 할 수 있도록
+
+: Low-code / Prompt Engineering / Ai-assisted coding
+=================================================
+
+
+##### Prompt > JSONObjectMapperTestApp.java 구현
+
+0. Domain Object  : User.java
+
+package spring.domain;
+
+import java.io.Serializable;
+import java.sql.Timestamp;
+
+/*
+ * FileName : User.java  
+ * ㅇ User 의 정보를 갖는 Value Object (도메인객체,비지니스객체)
+ * ㅇ USERS TABLE 의 1개의 ROW 의 정보를 갖는다.  
+*/ 
+public class User implements Serializable {
+
+	///Field
+    private String userId; 			// 회원 ID 
+    private String userName;		// 회원 이름 
+    private String password;     // 비밀번호 
+    private Integer age;    			// 나이 :: Integer wrapper class 사용 :: 추후 용도 확인  
+    private int grade;    				// 등급 :: int primitive 사용 :: :: 추후 용도 확인 
+    private Timestamp regDate	; // 가입일자 
+    //private Timestamp regDate	= new Timestamp(new Date().getTime()); // 가입일자
+    private boolean active; 
+    
+    ///Constructor
+    public User() {
+	}
+    public User (	String userId, String userName,String password, 
+    							Integer age, int grade ) {
+		this.userId = userId;
+		this.userName = userName;
+		this.password = password;
+		this.age = age;
+		this.grade = grade;
+	}    
+
+	///Method (getter/setter)
+	public String getUserId(){
+		return this.userId;
+	}
+	public void setUserId( String userId ){
+	   this.userId= userId;
+	}
+	public String getPassword(){
+	   return this.password;
+	}
+	public void setPassword( String password ){
+	   this.password= password;
+	}
+	public Integer getAge() {
+		return age;
+	}
+	public void setAge(Integer age) {
+		this.age = age;
+	}
+	public String getUserName() {
+		return userName;
+	}
+	public void setUserName(String userName) {
+		this.userName = userName;
+	}
+	public java.sql.Timestamp getRegDate() {
+		return regDate;
+	}
+	public void setRegDate(java.sql.Timestamp regDate) {
+		this.regDate = regDate;
+	}
+	public int getGrade() {
+		return grade;
+	}
+	public void setGrade(int grade) {
+		this.grade = grade;
+	}
+	public void setActive(boolean active) {
+		this.active = active;
+	}
+	public boolean isActive() {
+		return active;
+	}
+	@Override
+	public String toString() {
+		return "User [userid=" + userId + ", userName=" + userName + ", password="
+				+ password + ", age=" + age + ", grade=" + grade+ ", active=" + active
+				+ ", regDate=" + regDate + "]";
+	}
+}//end of class
+
+
+
+1. 아래의 JSON Binding lib 사용
+- jackson-core-asl-1.9.13.jar
+- jackson-mapper-asl-1.9.13.jar
+
+
+2. 구현 내용
+
+: User user = new User("user01" , "홍길동" , "1111" , null , 10) 
+  JSON Object 로 변경
+: JSON Object 를 User 인스턴스  생성
+
+:  java.util.List<User>() 에 User  인스턴스  2개 넣고
+   JSON Object 로 변경
+: 위의 JSON Object  를 List<User>  다시 생성
+
+:  java.util.Map<Sring, User>() 에 User 객체 2개 넣고. 
+   JSON Object 로 변경
+: 위의 JSON Object 를 Map<String , User> 다시 생성
+
+
+
+
+
+##### GPT-5
+
+
+import java.util.*;
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.type.TypeReference;
+import spring.domain.User;
+
+public class JSONObjectMapperTestApp {
+
+    public static void main(String[] args) throws Exception {
+        ObjectMapper mapper = new ObjectMapper();
+
+        // ===============================
+        // 1) User -> JSON String
+        // ===============================
+        User user = new User("user01", "홍길동", "1111", null, 10);
+
+        String userJson = mapper.writeValueAsString(user);
+        System.out.println("User -> JSON : " + userJson);
+
+        // ===============================
+        // 2) JSON String -> User
+        // ===============================
+        User userFromJson = mapper.readValue(userJson, User.class);
+        System.out.println("JSON -> User : " + userFromJson);
+
+        // ===============================
+        // 3) List<User> -> JSON String
+        // ===============================
+        List<User> userList = new ArrayList<User>();
+        userList.add(user);
+        userList.add(new User("user02", "이순신", "2222", 30, 20));
+
+        String listJson = mapper.writeValueAsString(userList);
+        System.out.println("List<User> -> JSON : " + listJson);
+
+        // ===============================
+        // 4) JSON String -> List<User>
+        // ===============================
+        List<User> listFromJson = mapper.readValue(
+            listJson, new TypeReference<List<User>>() {}
+        );
+        System.out.println("JSON -> List<User> : " + listFromJson);
+
+        // ===============================
+        // 5) Map<String, User> -> JSON String
+        // ===============================
+        Map<String, User> userMap = new LinkedHashMap<String, User>();
+        userMap.put("first", user);
+        userMap.put("second", new User("user03", "강감찬", "3333", 40, 30));
+
+        String mapJson = mapper.writeValueAsString(userMap);
+        System.out.println("Map<String, User> -> JSON : " + mapJson);
+
+        // ===============================
+        // 6) JSON String -> Map<String, User>
+        // ===============================
+        Map<String, User> mapFromJson = mapper.readValue(
+            mapJson, new TypeReference<Map<String, User>>() {}
+        );
+        System.out.println("JSON -> Map<String, User> : " + mapFromJson);
+    }
+}
+
+
+
+##### Gemini
+
+package spring.test;
+
+import java.io.IOException;
+import java.sql.Timestamp;
+import java.util.ArrayList;
+import java.util.HashMap;
+import java.util.List;
+import java.util.Map;
+
+import org.codehaus.jackson.map.ObjectMapper;
+import org.codehaus.jackson.map.SerializationConfig;
+import org.codehaus.jackson.type.TypeReference;
+
+import spring.domain.User;
+
+/*
+ * FileName : JSONObjectMapperTestApp.java
+ * ㅇ Jackson 라이브러리를 이용한 JSON 변환 테스트 클래스
+ */
+public class JSONObjectMapperTestApp {
+
+    public static void main(String[] args) throws IOException {
+
+        // Jackson 라이브러리의 핵심 클래스 ObjectMapper 생성
+        // JSON -> Object(Deserialization), Object -> JSON(Serialization) 작업을 수행한다.
+        ObjectMapper objectMapper = new ObjectMapper();
+        
+        // JSON 출력 시 가독성을 높이기 위해 pretty-print 기능 활성화
+        objectMapper.enable(SerializationConfig.Feature.INDENT_OUTPUT);
+
+        System.out.println("============================================\n");
+
+
+        // 1. User 객체 -> JSON Object 문자열 -> User 객체 변환
+        System.out.println(":: 1. User 객체 <==> JSON Object 변환 ::\n");
+
+        // 테스트용 User 객체 생성
+        User user = new User("user01", "홍길동", "1111", null, 10);
+        user.setActive(true);
+        user.setRegDate(new Timestamp(System.currentTimeMillis()));
+
+        // :: Java Object to JSON ::
+        // objectMapper.writeValueAsString(object) : 자바 객체를 JSON 형태의 문자열로 변환
+        System.out.println("[User 객체 -> JSON 문자열]");
+        String userJson = objectMapper.writeValueAsString(user);
+        System.out.println(userJson);
+
+        // :: JSON to Java Object ::
+        // objectMapper.readValue(jsonString, Class) : JSON 문자열을 지정된 클래스의 자바 객체로 변환
+        System.out.println("\n[JSON 문자열 -> User 객체]");
+        User userAfter = objectMapper.readValue(userJson, User.class);
+        System.out.println(userAfter);
+
+        System.out.println("\n============================================\n");
+
+
+        // 2. List<User> 객체 -> JSON Array 문자열 -> List<User> 객체 변환
+        System.out.println(":: 2. List<User> <==> JSON Array 변환 ::\n");
+        
+        // 테스트용 List 생성 및 User 객체 추가
+        List<User> userList = new ArrayList<>();
+        userList.add(user); // 위에서 생성한 user 객체 추가
+        userList.add(new User("user02", "이순신", "2222", 30, 20));
+
+        // :: Java List to JSON ::
+        System.out.println("[List<User> -> JSON Array 문자열]");
+        String listJson = objectMapper.writeValueAsString(userList);
+        System.out.println(listJson);
+        
+        // :: JSON to Java List ::
+        // Generic Collection(List, Map 등)을 변환할 때는 TypeReference를 사용해야 한다.
+        // Java의 Type Erasure 때문에 런타임에는 List<User>가 아닌 List 정보만 남기 때문.
+        System.out.println("\n[JSON Array 문자열 -> List<User>]");
+        List<User> userListAfter = objectMapper.readValue(listJson, new TypeReference<List<User>>() {});
+        
+        for (User u : userListAfter) {
+            System.out.println(u);
+        }
+
+        System.out.println("\n============================================\n");
+        
+
+        // 3. Map<String, User> 객체 -> JSON Object 문자열 -> Map<String, User> 객체 변환
+        System.out.println(":: 3. Map<String, User> <==> JSON Object 변환 ::\n");
+
+        // 테스트용 Map 생성 및 User 객체 추가
+        Map<String, User> userMap = new HashMap<>();
+        userMap.put("firstUser", user);
+        userMap.put("secondUser", new User("user03", "강감찬", "3333", 45, 30));
+
+        // :: Java Map to JSON ::
+        System.out.println("[Map<String, User> -> JSON Object 문자열]");
+        String mapJson = objectMapper.writeValueAsString(userMap);
+        System.out.println(mapJson);
+        
+        // :: JSON to Java Map ::
+        // List와 마찬가지로 TypeReference를 사용하여 Generic 타입을 명시해준다.
+        System.out.println("\n[JSON Object 문자열 -> Map<String, User>]");
+        Map<String, User> userMapAfter = objectMapper.readValue(mapJson, new TypeReference<Map<String, User>>() {});
+        
+        // Java 8+ 스타일 출력
+        userMapAfter.forEach((key, value) -> System.out.println("Key: " + key + ", Value: " + value));
+        
+        System.out.println("\n============================================\n");
+    }
+}
