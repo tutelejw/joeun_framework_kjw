@@ -8,11 +8,13 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RestController;
 
 import spring.domain.User;
 
 @RestController
+@ResponseBody
 //@RequestMapping("/userAPI/")
 @RequestMapping("/userAPI/*")
 public class UserRestController {
@@ -23,6 +25,7 @@ public class UserRestController {
 	
 	//http://127.0.0.1:8080/Spring13/app/userAPI/getUser?name=user02&age=10
 	@RequestMapping(value="getUser", method=RequestMethod.GET)
+	
 	public User getUser(@RequestParam("name") String name, @RequestParam("age") int age) throws Exception{
 		System.out.println();
 		System.out.println(name);
