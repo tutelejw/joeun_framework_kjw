@@ -26,21 +26,17 @@
                                 expression="org.springframework.stereotype.Repository"/>
     </context:component-scan>
 
-    <!-- ✅ JSON 변환(@RestController, @RequestBody 등)을 위한 필수 설정 -->
+   <!-- ✅ JSON 변환(@RestController, @RequestBody 등)을 위한 필수 설정 -->
     <mvc:annotation-driven />
 
-    <!-- :: Annotation 지원 HandlerMapping 선언 -->
-    <!-- Spring 4.X에서 사용, 5.X에서는 Deprecated -->
-    <!-- <bean class="org.springframework.web.servlet.mvc.annotation.DefaultAnnotationHandlerMapping"/> -->
-
-    <!-- ✅ @RequestMapping 기반 URL 매핑과 인터셉터 설정 -->
-    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
-        <property name="order" value="0"/>
-        <property name="interceptors" ref="logonCheckInterceptor"/>
-    </bean>
-
-    <!-- ✅ 로그인 인터셉터 빈 설정 -->
-    <bean id="logonCheckInterceptor" class="spring.common.web.LogonCheckInterceptor"/>
+    <!-- ✅ 인터셉터 등록 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- 모든 요청에 대해 적용 -->
+            <mvc:mapping path="/**"/>
+            <bean class="spring.common.web.LogonCheckInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
 
     <!-- ✅ ViewResolver 설정 -->
     <bean id="viewResolver"
@@ -59,5 +55,19 @@
 
         <property name="defaultErrorView" value="/common/error.jsp"/>
     </bean>
+
+    <!-- 기존 수동 HandlerMapping과 인터셉터는 제거 또는 주석처리 -->
+    <!--
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="order" value="0"/>
+        <property name="interceptors">
+            <list>
+                <ref bean="logonCheckInterceptor"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="logonCheckInterceptor" class="spring.common.web.LogonCheckInterceptor"/>
+    -->
 
 </beans>
