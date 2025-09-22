@@ -22,12 +22,13 @@ public class RestHttpClientApp_Aiassisted {
     ///Main Method
     public static void main(String[] args) throws Exception {
         // 개별 메서드 호출로 테스트
-//        addUser_test();
-//        login_test();
-//        getUser_test("user01");
-//        getUserList_test();
+        addUser_test();
+        login_test();
+        getUser_test("user01");
+        getUserList_test();
 //        updateUser_test();
-        checkDuplication_test("user01");
+//        checkDuplication_test("user01");
+//        checkDuplication_test("user99");
     }
 
     // 1. 회원가입 테스트

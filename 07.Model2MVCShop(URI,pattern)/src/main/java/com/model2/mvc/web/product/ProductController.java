@@ -34,7 +34,7 @@ public class ProductController {
 	//setter Method 구현 않음
 		
 	public ProductController(){
-		System.out.println(this.getClass());
+		System.out.println(this.getClass()+ " 생성자 인입됨 aaaaaaaaa");
 	}
 	
 	//==> classpath:config/common.properties  ,  classpath:config/commonservice.xml 참조 할것
