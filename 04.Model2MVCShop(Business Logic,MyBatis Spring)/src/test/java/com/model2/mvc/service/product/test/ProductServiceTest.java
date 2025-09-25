@@ -32,7 +32,7 @@ public class ProductServiceTest {
     @Before
     public void setUp() {
         testProduct = new Product();
-        testProduct.setProdNo(10042);
+        testProduct.setProdNo(10065);
         testProduct.setProdName("테스트상품");
         testProduct.setProdDetail("테스트 상세정보");
         testProduct.setManuDate("20250101");
@@ -45,7 +45,7 @@ public class ProductServiceTest {
         System.out.println("==> 테스트 종료");
     }
 
-    //@Test
+    @Test
     public void testAddAndGetProduct() throws Exception {
         productService.addProduct(testProduct);
         //int prodNo = 10042; // addProduct 후 prodNo가 세팅되어 있어야 함
@@ -62,7 +62,8 @@ public class ProductServiceTest {
     @Test
     public void testUpdateProduct() throws Exception {
         productService.addProduct(testProduct);
-        int prodNo = testProduct.getProdNo();
+//        int prodNo = testProduct.getProdNo();
+        int prodNo = 10060;
         System.out.println("testUpdateProduct : prodNo : " + prodNo);
         Product updated = productService.getProduct(prodNo);
         updated.setPrice(20000);

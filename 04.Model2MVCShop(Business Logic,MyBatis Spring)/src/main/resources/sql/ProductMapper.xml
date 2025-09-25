@@ -38,16 +38,24 @@
 
   <!-- Find Product -->
   <select id="findProduct" parameterType="String" resultMap="productResultMap">
-    SELECT
-      P.PROD_NO, P.PROD_NAME, P.PROD_DETAIL, P.MANUFACTURE_DAY,
-      P.PRICE, P.IMAGE_FILE, P.REG_DATE,
-      CASE
-        WHEN T.PROD_NO IS NOT NULL THEN '재고없음'
-        ELSE '판매중'
-      END AS TRAN_STATUS_TEXT
-    FROM PRODUCT P
-    LEFT JOIN TRANSACTION T ON P.PROD_NO = T.PROD_NO
-    WHERE P.PROD_NO = #{value, jdbcType=VARCHAR}
+  SELECT
+    P.PROD_NO,
+    P.PROD_NAME,
+    P.PROD_DETAIL,
+    P.MANUFACTURE_DAY,
+    P.PRICE,
+    P.IMAGE_FILE,
+    P.REG_DATE,
+    CASE TRIM(T.TRAN_STATUS_CODE)
+      WHEN '0' THEN '판매중'
+      WHEN '1' THEN '구매완료'
+      WHEN '2' THEN '배송중'
+      WHEN '3' THEN '배송완료'
+      ELSE '판매중'
+    END AS TRAN_STATUS_TEXT
+  FROM PRODUCT P
+  LEFT JOIN TRANSACTION T ON P.PROD_NO = T.PROD_NO
+  WHERE P.PROD_NO = #{value, jdbcType=VARCHAR}
   </select>
 
   <!-- Get Total Count -->
