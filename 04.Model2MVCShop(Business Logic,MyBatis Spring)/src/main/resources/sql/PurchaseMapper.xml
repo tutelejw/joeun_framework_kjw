@@ -1,0 +1,126 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="PurchaseMapper">
+
+    <!-- Result Map -->
+<resultMap id="purchaseResultMap" type="com.model2.mvc.service.domain.Purchase">
+    <id property="tranNo" column="tran_no" />
+    <result property="paymentOption" column="payment_option" />
+    <result property="receiverName" column="receiver_name" />
+    <result property="receiverPhone" column="receiver_phone" />
+    <result property="divyAddr" column="demailaddr" />
+    <result property="divyRequest" column="dlvy_request" />
+    <result property="tranCode" column="tran_status_code" />
+    <result property="orderDate" column="order_date" jdbcType="DATE" />
+    <result property="divyDate" column="dlvy_date" jdbcType="DATE" />
+
+    <association property="purchaseProd" javaType="com.model2.mvc.service.domain.Product">
+        <result property="prodNo" column="prod_no" />
+    </association>
+
+    <association property="buyer" javaType="com.model2.mvc.service.domain.User">
+        <result property="userId" column="buyer_id" />
+        <result property="userName" column="user_name" />
+    </association>
+</resultMap>
+
+
+    <!-- Insert Purchase -->
+    <insert id="insertPurchase" parameterType="com.model2.mvc.service.domain.Purchase">
+        INSERT INTO transaction (
+            tran_no, prod_no, buyer_id, payment_option,
+            receiver_name, receiver_phone, demailaddr,
+            dlvy_request, tran_status_code, order_date, dlvy_date
+        ) VALUES (
+            seq_transaction_tran_no.NEXTVAL,
+            #{purchaseProd.prodNo, jdbcType=NUMERIC},
+            #{buyer.userId, jdbcType=VARCHAR},
+            #{paymentOption, jdbcType=CHAR},
+            #{receiverName, jdbcType=VARCHAR},
+            #{receiverPhone, jdbcType=VARCHAR},
+            #{divyAddr, jdbcType=VARCHAR},
+            #{divyRequest, jdbcType=VARCHAR},
+            #{tranCode, jdbcType=CHAR},
+            #{orderDate, jdbcType=DATE},
+            #{divyDate, jdbcType=DATE}
+        )
+    </insert>
+
+    <!-- Find Purchase -->
+    <select id="findPurchase" parameterType="int" resultMap="purchaseResultMap">
+        SELECT 
+            T.tran_no, T.prod_no, T.buyer_id,
+            U.user_name, T.payment_option, T.receiver_name,
+            T.receiver_phone, T.demailaddr, T.dlvy_request,
+            T.tran_status_code, T.order_date, T.dlvy_date
+        FROM transaction T
+        JOIN users U ON T.buyer_id = U.user_id
+        WHERE T.tran_no = #{value, jdbcType=NUMERIC}
+    </select>
+
+    <!-- Get Purchase List with Paging & Search -->
+    <select id="getPurchaseList" parameterType="com.model2.mvc.common.Search" resultMap="purchaseResultMap">
+        SELECT * FROM (
+            SELECT ROWNUM AS row_seq, A.* FROM (
+                SELECT 
+                    T.tran_no, T.prod_no, T.buyer_id,
+                    U.user_name, T.payment_option, T.receiver_name,
+                    T.receiver_phone, T.demailaddr, T.dlvy_request,
+                    T.tran_status_code, T.order_date, T.dlvy_date
+                FROM transaction T
+                JOIN users U ON T.buyer_id = U.user_id
+                <where>
+                    <if test="searchCondition == '0' and searchKeyword != null and searchKeyword != ''">
+                        T.buyer_id LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                    </if>
+                    <if test="searchCondition == '1' and searchKeyword != null and searchKeyword != ''">
+                        T.receiver_name LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                    </if>
+                </where>
+                ORDER BY T.tran_no DESC
+            ) A
+            WHERE ROWNUM &lt;= #{endRowNum, jdbcType=NUMERIC}
+        )
+        WHERE row_seq &gt;= #{startRowNum, jdbcType=NUMERIC}
+    </select>
+
+    <!-- Get Total Count -->
+    <select id="getTotalCount" parameterType="com.model2.mvc.common.Search" resultType="int">
+        SELECT COUNT(*) FROM (
+            SELECT T.tran_no
+            FROM transaction T
+            JOIN users U ON T.buyer_id = U.user_id
+            <where>
+                <if test="searchCondition == '0' and searchKeyword != null and searchKeyword != ''">
+                    T.buyer_id LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                </if>
+                <if test="searchCondition == '1' and searchKeyword != null and searchKeyword != ''">
+                    T.receiver_name LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                </if>
+            </where>
+        )
+    </select>
+
+    <!-- Update Purchase Info -->
+    <update id="updatePurchase" parameterType="com.model2.mvc.service.domain.Purchase">
+        UPDATE transaction
+        SET
+            receiver_name = #{receiverName, jdbcType=VARCHAR},
+            receiver_phone = #{receiverPhone, jdbcType=VARCHAR},
+            demailaddr = #{divyAddr, jdbcType=VARCHAR},
+            dlvy_request = #{divyRequest, jdbcType=VARCHAR},
+            dlvy_date = #{divyDate, jdbcType=DATE}
+        WHERE tran_no = #{tranNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- Update Delivery Status -->
+    <update id="updatePurchaseDelivery">
+        UPDATE transaction
+        SET tran_status_code = #{tranCode, jdbcType=CHAR}
+        WHERE prod_no = #{prodNo, jdbcType=NUMERIC}
+    </update>
+
+</mapper>

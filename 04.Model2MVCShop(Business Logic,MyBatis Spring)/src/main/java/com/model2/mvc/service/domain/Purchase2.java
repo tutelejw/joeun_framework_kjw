@@ -1,28 +1,28 @@
 package com.model2.mvc.service.domain;
 
-
 import java.sql.Date;
 
-public class Purchase {
+public class Purchase2 {
 
+    /// Field
     private int tranNo;
-    private Product purchaseProd;     // 연관 객체
-    private User buyer;              // 연관 객체
-
+    private Product purchaseProd;   // product 테이블
+    private User buyer;             // users 테이블
     private String paymentOption;
     private String receiverName;
     private String receiverPhone;
-    private String divyAddr;
-    private String divyRequest;
-    private String tranCode;
-    private Date orderDate;
-    private Date divyDate;
+    private String deMailAddr;
+    private String dlvyRequest;
+    private String tranStatusCode;
 
-    public Purchase() {
+    private Date orderDate;
+    private Date dlvyDate;
+
+    /// Constructor
+    public Purchase2() {
     }
 
-    // ===== Getter / Setter =====
-
+    /// Getter / Setter
     public int getTranNo() {
         return tranNo;
     }
@@ -71,28 +71,28 @@ public class Purchase {
         this.receiverPhone = receiverPhone;
     }
 
-    public String getDivyAddr() {
-        return divyAddr;
+    public String getDeMailAddr() {
+        return deMailAddr;
     }
 
-    public void setDivyAddr(String divyAddr) {
-        this.divyAddr = divyAddr;
+    public void setDeMailAddr(String deMailAddr) {
+        this.deMailAddr = deMailAddr;
     }
 
-    public String getDivyRequest() {
-        return divyRequest;
+    public String getDlvyRequest() {
+        return dlvyRequest;
     }
 
-    public void setDivyRequest(String divyRequest) {
-        this.divyRequest = divyRequest;
+    public void setDlvyRequest(String dlvyRequest) {
+        this.dlvyRequest = dlvyRequest;
     }
 
-    public String getTranCode() {
-        return tranCode;
+    public String getTranStatusCode() {
+        return tranStatusCode;
     }
 
-    public void setTranCode(String tranCode) {
-        this.tranCode = tranCode;
+    public void setTranStatusCode(String tranStatusCode) {
+        this.tranStatusCode = tranStatusCode;
     }
 
     public Date getOrderDate() {
@@ -103,28 +103,29 @@ public class Purchase {
         this.orderDate = orderDate;
     }
 
-    public Date getDivyDate() {
-        return divyDate;
+    public Date getDlvyDate() {
+        return dlvyDate;
     }
 
-    public void setDivyDate(Date divyDate) {
-        this.divyDate = divyDate;
+    public void setDlvyDate(Date dlvyDate) {
+        this.dlvyDate = dlvyDate;
     }
 
+    /// toString
     @Override
     public String toString() {
         return "Purchase{" +
                 "tranNo=" + tranNo +
-                ", purchaseProd=" + purchaseProd +
-                ", buyer=" + buyer +
+                ", purchaseProd=" + (purchaseProd != null ? purchaseProd.getProdName() : null) +
+                ", buyer=" + (buyer != null ? buyer.getUserId() : null) +
                 ", paymentOption='" + paymentOption + '\'' +
                 ", receiverName='" + receiverName + '\'' +
                 ", receiverPhone='" + receiverPhone + '\'' +
-                ", divyAddr='" + divyAddr + '\'' +
-                ", divyRequest='" + divyRequest + '\'' +
-                ", tranCode='" + tranCode + '\'' +
+                ", deMailAddr='" + deMailAddr + '\'' +
+                ", dlvyRequest='" + dlvyRequest + '\'' +
+                ", tranStatusCode='" + tranStatusCode + '\'' +
                 ", orderDate=" + orderDate +
-                ", divyDate=" + divyDate +
+                ", dlvyDate=" + dlvyDate +
                 '}';
     }
 }

@@ -1,0 +1,225 @@
+04.Model2MVCShop(Business Logic,MyBatis Spring)/src/main/java/com/model2/mvc/service/purchase/impl/3.PurchaseDaoImpl_PurchaseServiceImpl_PRD.txt
+
+Spring + MyBatis 기반 프로젝트에서 DAO 구현체를 작성하려고 해.
+아래 자료를 참고해서 PurchaseDaoImpl.java PurchaseServiceImpl.java파일을 만들어줘.
+
+[참고 파일]
+- PurchaseDao.java : Purchase 관련 DAO 인터페이스
+- PurchaseService.java : Purchase 서비스 계층 인터페이스
+- PurchaseMapper.xml : Purchase 테이블에 대한 MyBatis SQL 매퍼(XML)
+
+[작성 조건]
+1. 패키지 경로는 반드시 다음과 같이 해줘:
+   package com.model2.mvc.service.purchase.impl;
+
+2. 클래스명: PurchaseDaoImpl
+   - PurchaseDao 인터페이스를 implements 해야 함.
+
+3. MyBatis SqlSession 주입
+   - Spring 환경에서 @Autowired로 SqlSession 주입받기
+   - SqlSessionTemplate 또는 SqlSession 사용 가능
+
+4. 메서드 동작
+   - add INSERT 실행 후 영향을 받은 행 수(int) 리턴
+   - find SELECT 실행 후 객체 리턴
+   - update UPDATE 실행 후 영향을 받은 행 수 리턴
+   - del DELETE 실행 후 영향을 받은 행 수 리턴
+   - List SELECT 실행 후 List<객체> 리턴
+   - getTotalCount(Search search) → SELECT 실행 후 int 리턴
+
+5. 디버깅 목적
+   - 생성자 호출 시 System.out.println("==> " + getClass() + " 생성자 호출");
+   - setter 호출 시에도 로그 출력
+   - 각 메서드 실행 시 SQL 실행 결과(affected rows, 조회 결과 등) 출력
+
+6. 모든 메서드는 `throws Exception` 선언 (교육용으로 try-catch 생략)
+
+7. 코드 스타일
+   - @Repository("purchaseDao") 애노테이션 붙이기
+   - MyBatis 매퍼의 namespace는 "PurchaseMapper" 사용
+   - sqlSession.insert("PurchaseMapper.addPurchase", purchase) 형식으로 호출
+   - INSERT, UPDATE, DELETE는 실행 후 반환값을 변수에 담아 로그 출력
+   - SELECT는 결과 객체/리스트를 변수에 담아 로그 출력
+   
+   
+   
+   
+package com.model2.mvc.service.purchase;
+
+import java.util.List;
+import java.util.Map;
+
+import com.model2.mvc.service.domain.Purchase;
+import com.model2.mvc.common.Search;
+
+public interface PurchaseDao {
+
+    public void insertPurchase(Purchase purchase) throws Exception;
+
+    public Purchase findPurchase(int tranNo) throws Exception;
+
+    public List<Purchase> getPurchaseList(Search search) throws Exception;
+
+    public int getTotalCount(Search search) throws Exception;
+
+    public void updatePurchase(Purchase purchase) throws Exception;
+
+    public void updatePurchaseDelivery(int prodNo, int tranCode) throws Exception;
+}
+
+
+
+
+package com.model2.mvc.service.purchase;
+
+import java.util.Map;
+
+import com.model2.mvc.service.domain.Purchase;
+import com.model2.mvc.common.Search;
+
+public interface PurchaseService {
+
+    public void addPurchase(Purchase purchase) throws Exception;
+
+    public Purchase getPurchase(int tranNo) throws Exception;
+
+    public Map<String, Object> getPurchaseList(Search search) throws Exception;
+
+    public void updatePurchase(Purchase purchase) throws Exception;
+
+    public void updateTranStatus(int prodNo, int tranCode) throws Exception;
+}
+
+   
+   
+   
+   
+   
+   
+   
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="PurchaseMapper">
+
+    <!-- Result Map -->
+<resultMap id="purchaseResultMap" type="com.model2.mvc.service.domain.Purchase">
+    <id property="tranNo" column="tran_no" />
+    <result property="paymentOption" column="payment_option" />
+    <result property="receiverName" column="receiver_name" />
+    <result property="receiverPhone" column="receiver_phone" />
+    <result property="divyAddr" column="demailaddr" />
+    <result property="divyRequest" column="dlvy_request" />
+    <result property="tranCode" column="tran_status_code" />
+    <result property="orderDate" column="order_date" jdbcType="DATE" />
+    <result property="divyDate" column="dlvy_date" jdbcType="DATE" />
+
+    <association property="purchaseProd" javaType="com.model2.mvc.service.domain.Product">
+        <result property="prodNo" column="prod_no" />
+    </association>
+
+    <association property="buyer" javaType="com.model2.mvc.service.domain.User">
+        <result property="userId" column="buyer_id" />
+        <result property="userName" column="user_name" />
+    </association>
+</resultMap>
+
+
+    <!-- Insert Purchase -->
+    <insert id="insertPurchase" parameterType="com.model2.mvc.service.domain.Purchase">
+        INSERT INTO transaction (
+            tran_no, prod_no, buyer_id, payment_option,
+            receiver_name, receiver_phone, demailaddr,
+            dlvy_request, tran_status_code, order_date, dlvy_date
+        ) VALUES (
+            seq_transaction_tran_no.NEXTVAL,
+            #{purchaseProd.prodNo, jdbcType=NUMERIC},
+            #{buyer.userId, jdbcType=VARCHAR},
+            #{paymentOption, jdbcType=CHAR},
+            #{receiverName, jdbcType=VARCHAR},
+            #{receiverPhone, jdbcType=VARCHAR},
+            #{divyAddr, jdbcType=VARCHAR},
+            #{divyRequest, jdbcType=VARCHAR},
+            #{tranCode, jdbcType=CHAR},
+            #{orderDate, jdbcType=DATE},
+            #{divyDate, jdbcType=DATE}
+        )
+    </insert>
+
+    <!-- Find Purchase -->
+    <select id="findPurchase" parameterType="int" resultMap="purchaseResultMap">
+        SELECT 
+            T.tran_no, T.prod_no, T.buyer_id,
+            U.user_name, T.payment_option, T.receiver_name,
+            T.receiver_phone, T.demailaddr, T.dlvy_request,
+            T.tran_status_code, T.order_date, T.dlvy_date
+        FROM transaction T
+        JOIN users U ON T.buyer_id = U.user_id
+        WHERE T.tran_no = #{value, jdbcType=NUMERIC}
+    </select>
+
+    <!-- Get Purchase List with Paging & Search -->
+    <select id="getPurchaseList" parameterType="com.model2.mvc.common.Search" resultMap="purchaseResultMap">
+        SELECT * FROM (
+            SELECT ROWNUM AS row_seq, A.* FROM (
+                SELECT 
+                    T.tran_no, T.prod_no, T.buyer_id,
+                    U.user_name, T.payment_option, T.receiver_name,
+                    T.receiver_phone, T.demailaddr, T.dlvy_request,
+                    T.tran_status_code, T.order_date, T.dlvy_date
+                FROM transaction T
+                JOIN users U ON T.buyer_id = U.user_id
+                <where>
+                    <if test="searchCondition == '0' and searchKeyword != null and searchKeyword != ''">
+                        T.buyer_id LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                    </if>
+                    <if test="searchCondition == '1' and searchKeyword != null and searchKeyword != ''">
+                        T.receiver_name LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                    </if>
+                </where>
+                ORDER BY T.tran_no DESC
+            ) A
+            WHERE ROWNUM &lt;= #{endRowNum, jdbcType=NUMERIC}
+        )
+        WHERE row_seq &gt;= #{startRowNum, jdbcType=NUMERIC}
+    </select>
+
+    <!-- Get Total Count -->
+    <select id="getTotalCount" parameterType="com.model2.mvc.common.Search" resultType="int">
+        SELECT COUNT(*) FROM (
+            SELECT T.tran_no
+            FROM transaction T
+            JOIN users U ON T.buyer_id = U.user_id
+            <where>
+                <if test="searchCondition == '0' and searchKeyword != null and searchKeyword != ''">
+                    T.buyer_id LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                </if>
+                <if test="searchCondition == '1' and searchKeyword != null and searchKeyword != ''">
+                    T.receiver_name LIKE '%' || #{searchKeyword, jdbcType=VARCHAR} || '%'
+                </if>
+            </where>
+        )
+    </select>
+
+    <!-- Update Purchase Info -->
+    <update id="updatePurchase" parameterType="com.model2.mvc.service.domain.Purchase">
+        UPDATE transaction
+        SET
+            receiver_name = #{receiverName, jdbcType=VARCHAR},
+            receiver_phone = #{receiverPhone, jdbcType=VARCHAR},
+            demailaddr = #{divyAddr, jdbcType=VARCHAR},
+            dlvy_request = #{divyRequest, jdbcType=VARCHAR},
+            dlvy_date = #{divyDate, jdbcType=DATE}
+        WHERE tran_no = #{tranNo, jdbcType=NUMERIC}
+    </update>
+
+    <!-- Update Delivery Status -->
+    <update id="updatePurchaseDelivery">
+        UPDATE transaction
+        SET tran_status_code = #{tranCode, jdbcType=CHAR}
+        WHERE prod_no = #{prodNo, jdbcType=NUMERIC}
+    </update>
+
+</mapper>
