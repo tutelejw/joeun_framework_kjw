@@ -1,0 +1,8 @@
+Enable downloading of external XML catalog resources
+
+
+Window > Preferences > XML (Wild Web Developer)
+
+"Download external resources like referenced DTD, XSD" 체크 박스 선택
+
+"Enable autoclosing of XML tags" 체크 박스 선택 (필요시)

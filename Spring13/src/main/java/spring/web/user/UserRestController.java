@@ -14,7 +14,7 @@ import org.springframework.web.bind.annotation.RestController;
 import spring.domain.User;
 
 @RestController
-@ResponseBody
+//@ResponseBody
 //@RequestMapping("/userAPI/")
 @RequestMapping("/userAPI/*")
 public class UserRestController {
@@ -33,9 +33,11 @@ public class UserRestController {
 		
 		User returnUser = new User();
 		returnUser.setUserId("AAA");
-		returnUser.setUserName("GET:이순신");
-		returnUser.setAge(100);
-		System.out.println(returnUser);
+		//returnUser.setUserName("GET:이순신");
+		returnUser.setUserName(name);
+		returnUser.setAge(age);
+//		returnUser.setAge(100);
+		//System.out.println(returnUser);
 		
 		return returnUser;
 	}
@@ -69,8 +71,10 @@ public class UserRestController {
 		
 		System.out.println("[To Client Data]");
 		User returnUser = new User();
-		returnUser.setUserId("AAA");
-		returnUser.setUserName("POST:이순신");
+//		returnUser.setUserId("AAA");
+		returnUser.setUserId(user.getUserId());
+//		returnUser.setUserName("POST:이순신");
+		returnUser.setUserName(user.getUserName());
 		System.out.println("2: " + returnUser);
 		
 		return returnUser;

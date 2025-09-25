@@ -1,0 +1,253 @@
+
+
+##### Prompt > RestHttpClientApp_Aiassisted_Product.java 구현
+
+0. Domain Object  : Product.java
+
+package com.model2.mvc.service.domain;
+
+import java.sql.Date;
+
+
+//==>상품정보를 모델링(추상화/캡슐화)한 Bean
+package com.model2.mvc.service.domain;
+
+import java.sql.Date;
+
+//==>회원정보를 모델링(추상화/캡슐화)한 Bean
+public class Product {
+	
+	///Field
+	private int prodNo;
+	private String prodName;
+	private String prodDetail;
+	private String manuDate;
+	private int price;
+	private String fileName; 
+	private Date regDate;
+	private String proTranCode;
+	
+	///Constructor
+	public Product() {
+	}
+	///Method 
+	
+	public String getProTranCode() { return proTranCode;}
+	public void setProTranCode(String proTranCode) {this.proTranCode=proTranCode;}
+	
+	public int getProdNo() {		return prodNo;	}
+	public void setProdNo(int prodNo) {		this.prodNo=prodNo;	}
+	
+	public String getProdName() { return prodName;}
+	public void setProdName(String prodName) { this.prodName=prodName; }
+	
+	public String getProdDetail() { return prodDetail; }
+	public void setProdDetail(String prodDetail) {this.prodDetail=prodDetail;}
+	public String getManuDate() { return manuDate; }
+	public void setManuDate(String manuDate) { this.manuDate=manuDate; }
+	
+	public int getPrice() { return price; }
+	public void setPrice(int price) {this.price = price; }
+	
+	public String getFileName() { return fileName; }
+	public void setFileName(String fileName) { this.fileName=fileName;}
+		
+	public Date getRegDate() { return regDate; }
+	public void setRegDate(Date regDate) { this.regDate=regDate; }
+		
+	@Override
+	public String toString() {
+		return "Product Domain : " +getClass().getSimpleName() + " :: " + prodNo + " / " +  prodName + " / " +  manuDate + " / " +  price + " / " +  fileName + " / " + regDate ;
+	}
+}
+	
+	
+
+
+1. RestController : ProductRestController.java   
+
+package com.model2.mvc.web.product;
+
+import java.util.Map;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.*;
+
+import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.Product;
+import com.model2.mvc.service.product.ProductService;
+
+@RestController  // 💡 JSON 반환을 위한 REST Controller 선언
+@RequestMapping("/product/json")  // 💡 URL prefix 설정
+public class ProductRestController {
+
+    @Autowired
+    @Qualifier("productServiceImpl")
+    private ProductService productService;
+
+    public ProductRestController() {
+        System.out.println("==> ProductRestController 생성됨");
+    }
+
+    /**
+     * ✅ 1. 상품 등록
+     * @param product : 등록할 상품 정보
+     * @throws Exception
+     * @return 등록된 상품 정보(JSON)
+     * 📌 예제 URL: POST /product/json/addProduct
+     * 📌 Content-Type: application/json
+     * {
+     *     "prodName": "iPhone 15",
+     *     "prodDetail": "Apple 신형 스마트폰",
+     *     "manuDate": "2025-09-01",
+     *     "price": 1500000,
+     *     "fileName": "iphone15.jpg"
+     * }
+     */
+    @PostMapping("/addProduct")
+    public Product addProduct(@RequestBody Product product) throws Exception {
+        System.out.println("▶ REST:: addProduct() 호출됨");
+        productService.addProduct(product);
+        return product;
+    }
+
+    /**
+     * ✅ 2. 상품 상세 조회
+     * @param prodNo : 상품 번호 (경로변수)
+     * @return 해당 상품 정보(JSON)
+     * 📌 예제 URL: GET /product/json/getProduct/10001
+     */
+    @GetMapping("/getProduct/{prodNo}")
+    public Product getProduct(@PathVariable int prodNo) throws Exception {
+        System.out.println("▶ REST:: getProduct() 호출됨 - prodNo: " + prodNo);
+        return productService.getProduct(prodNo);
+    }
+
+    /**
+     * ✅ 3. 상품 리스트 조회
+     * @param search : 검색 조건 및 페이지 정보
+     * @return 상품 리스트 + 전체 개수(JSON)
+     * 📌 예제 URL: GET /product/json/getProductList?currentPage=1&pageSize=10
+     */
+    @GetMapping("/getProductList")
+    public Map<String, Object> getProductList(@ModelAttribute Search search) throws Exception {
+        System.out.println("▶ REST:: getProductList() 호출됨 - page: " + search.getCurrentPage());
+        
+        if (search.getCurrentPage() == 0) {
+            search.setCurrentPage(1);
+        }
+        if (search.getPageSize() == 0) {
+            search.setPageSize(10);  // 기본 페이지 사이즈
+        }
+
+        return productService.getProductList(search);
+    }
+
+    /**
+     * ✅ 4. 상품 정보 수정
+     * @param product : 수정할 상품 정보 (JSON)
+     * @return 수정 완료된 상품 정보(JSON)
+     * 📌 예제 URL: PUT /product/json/updateProduct
+     * 📌 Content-Type: application/json
+     * {
+     *     "prodNo": 10001,
+     *     "prodName": "iPhone 15 Pro",
+     *     ...
+     * }
+     */
+    @PutMapping("/updateProduct")
+    public Product updateProduct(@RequestBody Product product) throws Exception {
+        System.out.println("▶ REST:: updateProduct() 호출됨 - prodNo: " + product.getProdNo());
+
+        productService.updateProduct(product);
+        return product;
+    }
+}
+
+
+2. Search.java
+
+package com.model2.mvc.common;
+
+
+//==>리스트화면을 모델링(추상화/캡슐화)한 Bean 
+public class Search {
+	
+	///Field
+	private int currentPage;
+	private String searchCondition;
+	private String searchKeyword;
+	private int pageSize;
+	//==> 리스트화면 currentPage에 해당하는 회원정보를 ROWNUM 사용 SELECT 위해 추가된 Field 
+	//==> UserMapper.xml 의 
+	//==> <select  id="getUserList"  parameterType="search"	resultMap="userSelectMap">
+	//==> 참조
+	private int endRowNum;
+	private int startRowNum;
+	
+	///Constructor
+	public Search() {
+	}
+	
+	///Method
+	public int getPageSize() {
+		return pageSize;
+	}
+	public void setPageSize(int paseSize) {
+		this.pageSize = paseSize;
+	}
+	
+	public int getCurrentPage() {
+		return currentPage;
+	}
+	public void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
+	}
+
+	public String getSearchCondition() {
+		return searchCondition;
+	}
+	public void setSearchCondition(String searchCondition) {
+		this.searchCondition = searchCondition;
+	}
+	
+	public String getSearchKeyword() {
+		return searchKeyword;
+	}
+	public void setSearchKeyword(String searchKeyword) {
+		this.searchKeyword = searchKeyword;
+	}
+	
+	//==> Select Query 시 ROWNUM 마지막 값 
+	public int getEndRowNum() {
+		return getCurrentPage()*getPageSize();
+	}
+	//==> Select Query 시 ROWNUM 시작 값
+	public int getStartRowNum() {
+		return (getCurrentPage()-1)*getPageSize()+1;
+	}
+
+	@Override
+	public String toString() {
+		return "Search [currentPage=" + currentPage + ", searchCondition="
+				+ searchCondition + ", searchKeyword=" + searchKeyword
+				+ ", pageSize=" + pageSize + ", endRowNum=" + endRowNum
+				+ ", startRowNum=" + startRowNum + "]";
+	}
+}
+
+
+3. 사용 3rd-part Lib
+: httpcomponents-client-4.3.4 사용하지 않고 HttpURLConnection 사용 
+: jackson-core-asl-1.9.13.jar / - jackson-mapper-asl-1.9.13.jar 
+
+
+4.  ProductRestController 의 각각의 Method Test 하는 Static Method 구현
+: 예> addProduct() Test 할 경우. addProduct_test()
+
+5. 자세한 주석 처리 
+부분별 용도 설명
+전달 내용 및 방향
+결과
+예제URL 제공
