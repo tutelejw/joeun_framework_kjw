@@ -17,5 +17,7 @@
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/junit-4.13.2"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/log4j-1.2.17"/>
 	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/com.springsource.org.aspectj.weaver-1.6.8.RELEASE"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring-aspects-5.2.5.RELEASE"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/spring-aop-5.2.5.RELEASE.jar"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
