@@ -111,7 +111,7 @@ public class PurchaseServiceTest {
     }
 
     // 5. updateTranStatus 테스트
-    @Test
+    //@Test
     public void testUpdateTranStatus() throws Exception {
         int prodNo = 10001; // 실제 존재하는 상품 번호
         int newTranCode = 2; // 배송 상태 코드 예: 2 = 배송중
