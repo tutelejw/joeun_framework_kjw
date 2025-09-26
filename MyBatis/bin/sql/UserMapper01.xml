@@ -1,0 +1,72 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper01">
+
+    <!-- 모든 유저 정보 조회 -->
+    <select id="getUserList" resultType="mybatis.service.domain.User">
+        SELECT user_id AS userId,
+               user_name AS userName,
+               password,
+               age,
+               grade,
+               reg_date AS regDate
+        FROM users
+    </select>
+
+    <!-- userId로 유저 조회 -->
+    <select id="getUser" parameterType="String" resultType="mybatis.service.domain.User">
+        SELECT user_id AS userId,
+               user_name AS userName,
+               password,
+               age,
+               grade,
+               reg_date AS regDate
+        FROM users
+        WHERE user_id = #{userId}
+    </select>
+
+    <!-- userId + password로 유저 이름 조회 -->
+    <select id="findUserId" parameterType="mybatis.service.domain.User" resultType="String">
+        SELECT user_name
+        FROM users
+        WHERE user_id = #{userId}
+          AND password = #{password}
+    </select>
+
+    <!-- age로 유저 이름 리스트 조회 -->
+    <select id="getUserListAge" parameterType="mybatis.service.domain.User" resultType="String">
+        SELECT user_name
+        FROM users
+        WHERE age = #{age}
+    </select>
+
+
+<!-- 신규 유저 추가 -->
+    <insert id="addUser" parameterType="mybatis.service.domain.User">
+        INSERT INTO users (
+            user_id, user_name, password, age, grade, reg_date
+        ) VALUES (
+            #{userId}, #{userName}, #{password}, #{age}, #{grade}, SYSDATE
+        )
+    </insert>
+
+    <!-- 유저 정보 수정 (user_name, password, age, grade) -->
+    <update id="updateUser" parameterType="mybatis.service.domain.User">
+        UPDATE users
+        SET user_name = #{userName},
+            password = #{password},
+            age = #{age},
+            grade = #{grade}
+        WHERE user_id = #{userId}
+    </update>
+
+    <!-- 유저 삭제 -->
+    <delete id="deleteUser" parameterType="String">
+        DELETE FROM users
+        WHERE user_id = #{userId}
+    </delete>
+
+</mapper>

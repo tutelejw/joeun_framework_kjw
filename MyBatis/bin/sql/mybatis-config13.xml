@@ -1,0 +1,21 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE configuration
+  PUBLIC "-//mybatis.org//DTD Config 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-config.dtd">
+
+<configuration>
+
+
+    <!-- ✅ alias 등록 -->
+    <typeAliases>
+        <typeAlias alias="user" type="mybatis.service.domain.User"/>
+        <typeAlias alias="search" type="mybatis.service.domain.Search"/>
+    </typeAliases>
+
+    <!-- Mapper 파일 등록 -->
+    <mappers>
+
+	<mapper resource="sql/UserMapper10.xml"/>
+
+    </mappers>
+</configuration>

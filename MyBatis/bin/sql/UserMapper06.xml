@@ -1,0 +1,113 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper06">
+
+<!-- MyBatis 매퍼 XML 파일을 작성해줘.
+
+다음 조건을 만족해야 해:
+1. 테이블은 users이고 컬럼은 다음과 같아:
+   - user_id (PK), user_name, password, age, grade, reg_date
+2. resultMap은 userSelectMap으로 정의해줘.
+   - user_id는 <id>로, 나머지는 <result>로 매핑하고 jdbcType을 포함해.
+3. 아래 SQL들을 매퍼에 정의해줘:
+
+   [1] getUserList01
+   - userName 또는 age가 null이 아닐 때 조건으로 포함되는 동적 SELECT
+   - resultMap은 userSelectMap 사용
+
+   [2] getUserList02
+   - 조건에 따라 다음과 같이 동작하는 동적 SELECT
+     - grade != 0 → grade = #{grade}
+     - grade == 0 → grade IS NULL
+     - age != null → OR age = #{age}
+     - age == null → OR age IS NULL
+     - age == null AND regDate == null → OR reg_date IS NULL
+   - resultMap은 userSelectMap 사용
+
+   [3] addUser
+   - INSERT 쿼리
+   - grade가 0이면 null, 아니면 값 삽입
+   - regDate는 #{regDate, jdbcType=DATE} 사용
+
+   [4] removeUser
+   - user_id로 삭제
+   - parameterType은 string, #{userId} 사용
+
+네임스페이스는 UserMapper06으로 설정해줘.
+ -->
+  <!-- resultMap 정의: user_id는 기본키라 <id>로 지정 -->
+  <resultMap id="userSelectMap" type="user">
+    <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+    <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+    <result property="password" column="password" jdbcType="VARCHAR"/>
+    <result property="age" column="age" jdbcType="INTEGER"/>
+    <result property="grade" column="grade" jdbcType="NUMERIC"/>
+    <result property="regDate" column="reg_date" jdbcType="DATE"/>
+  </resultMap>
+
+  <!-- getUserList01 쿼리: 동적 SQL 사용 및 resultMap 재사용 -->
+  <select id="getUserList01" resultMap="userSelectMap" parameterType="user">
+    SELECT user_id, user_name, password, age, grade, reg_date
+    FROM users
+    <where>
+      <if test="userName != null">
+        user_name = #{userName}
+      </if>
+      <if test="age != null">
+        AND age = #{age}
+      </if>
+    </where>
+    ORDER BY user_id desc
+  </select>
+
+	<select id="getUserList02" resultMap="userSelectMap" parameterType="user">
+    SELECT user_id, user_name, password, age, grade, reg_date
+    FROM users
+    <where>
+      <if test="grade != 0">
+        grade = #{grade}
+      </if>
+      <if test="grade == 0">
+        grade is null
+      </if>
+	  <if test="age != null">
+        or age = #{age}
+      </if>
+      <if test="age == null">
+        or age is null
+      </if>
+	  <if test="age == null and regDate == null">
+        or reg_Date is null
+      </if>
+    </where>
+    ORDER BY user_id desc
+  </select>
+ 
+ <insert id="addUser" parameterType="user">
+    INSERT INTO users (
+        user_id, user_name, password
+        , age
+        , grade
+        , reg_date
+    )
+    VALUES (
+        #{userId},
+        #{userName},
+        #{password}, 
+        #{age, jdbcType=INTEGER},
+        <if test="grade == 0">null</if>
+        <if test="grade != 0">#{grade}</if>,
+        #{regDate, jdbcType=DATE})
+</insert>
+
+    
+
+    <delete id="removeUser" parameterType="java.lang.string">
+    DELETE FROM users WHERE user_id = #{value}
+	</delete>
+    
+
+</mapper>

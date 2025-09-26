@@ -1,0 +1,79 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper09">
+
+
+  <!-- resultMap 정의 -->
+  <resultMap id="userResultMap" type="mybatis.service.domain.User">
+    <result property="userId" column="user_id" jdbcType="VARCHAR"/>
+    <result property="userName" column="user_name" jdbcType="VARCHAR"/>
+    <result property="password" column="password" jdbcType="VARCHAR"/>
+    <result property="age" column="age" jdbcType="INTEGER"/>
+    <result property="grade" column="grade" jdbcType="INTEGER"/>
+    <result property="regDate" column="reg_date" jdbcType="TIMESTAMP"/>
+  </resultMap>
+
+  <!-- getUserList01: userId 목록으로 조회 (collection, array 가능) -->
+  <select id="getUserList01" resultMap="userResultMap" parameterType="mybatis.service.domain.Search">
+    SELECT user_id, user_name, password, age, grade, reg_date
+    FROM users
+    <where>
+      <if test="userId != null and userId.size() != 0">
+        user_id IN
+        <foreach collection="userId" item="value" open="(" separator="," close=")">
+          #{value,jdbcType=VARCHAR}
+        </foreach>
+      </if>
+    </where>
+    ORDER BY user_id
+  </select>
+
+  <!-- getUserList02: userName 배열로 조회 (userName[0] != null 체크) -->
+  <select id="getUserList02" resultMap="userResultMap" parameterType="mybatis.service.domain.Search">
+    SELECT user_id, user_name, password, age, grade, reg_date
+    FROM users
+    <where>
+      <if test="userName != null and userName[0] != null">
+        user_name IN
+        <foreach collection="userName" item="value" open="(" separator="," close=")">
+          #{value,jdbcType=VARCHAR}
+        </foreach>
+      </if>
+    </where>
+    ORDER BY user_id
+  </select>
+
+  <!-- getUserList03: userId 목록 조회, where 대신 trim element 적용 -->
+  <select id="getUserList03" resultMap="userResultMap" parameterType="mybatis.service.domain.Search">
+    SELECT user_id, user_name, password, age, grade, reg_date
+    FROM users
+    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+      <if test="userId != null and userId.size() != 0">
+        AND user_id IN
+        <foreach collection="userId" item="value" open="(" separator="," close=")">
+          #{value,jdbcType=VARCHAR}
+        </foreach>
+      </if>
+    </trim>
+    ORDER BY user_id
+  </select>
+
+  <!-- getUserList04: userName 배열 조회, where 대신 trim element 적용 -->
+  <select id="getUserList04" resultMap="userResultMap" parameterType="mybatis.service.domain.Search">
+    SELECT user_id, user_name, password, age, grade, reg_date
+    FROM users
+    <trim prefix="WHERE" prefixOverrides="AND |OR ">
+      <if test="userName != null and userName[0] != null">
+        AND user_name IN
+        <foreach collection="userName" item="value" open="(" separator="," close=")">
+          #{value,jdbcType=VARCHAR}
+        </foreach>
+      </if>
+    </trim>
+    ORDER BY user_id
+  </select>
+
+</mapper>
