@@ -1,0 +1,84 @@
+<!DOCTYPE html>
+<html lang="ko">
+	
+<head>
+	<meta charset="UTF-8">
+	
+	<script src="../javascript/jquery-2.1.4.js" type="text/javascript"></script>
+	<script type="text/javascript">
+	
+		// [방법1] javascript 이용 : onclink Event 발생시 호출되는 function 선언
+		function change( elem ) {
+			elem.style.color="red";
+		}	
+
+		// [방법2] jQuery Framework 이용 
+		// - 간결하며 가독성 좋으며(?) : 학습전...
+		// - UI( html, css ,  javascript )  분리 
+		$( function(){
+			
+			$('span').click( function(){
+				
+				$(this).css('color' , 'red');	
+			
+			})
+			
+		});
+
+/////////////////////////////////////////////////////////////
+
+//1. javascript 이용 : onload 시 호출되는 function 선언 (CallBack function)
+//==> onload : DOM element 의 load 또는 image 또는 외부 모든 resource 들이 load 완료시점
+window.onload = function(){
+alert("element 파싱 , load 완료시점 alert 창 open \n\n window.onload 사용");
+}
+
+//2.1 jQuery 사용법
+//:: 1. 과 동일 (차이점 : DOM element 가 load 된 시점에 실행)
+//:: 1 보다 2.1 이 먼저 실행됨
+//==> ready(CallBack function)
+$(document).ready(function(){
+alert("element 파싱, load 완료시점 alert 창 open \n\n jQuery $(document).ready() 사용")
+});
+
+//2.2 jQuery 사용법
+//:: 2.1 과 동일 (notation 만 틀리다)
+//:: 1 보다 2.1, 2.2 먼저 실행됨
+$(function(){
+alert("element 파싱(load)완료시점 alert 창 open \n\n jQuery $() 사용")
+});
+
+/* ==> jQuery 사용 Notation <==
+window.jQuery = window.$ = jQuery = $ ==> 동일한 Notaion
+
+위 의 예제 2.2 를 아래와 같이 변경 실습해 보자
+$(function(){ // ==> 부분을 아래와 같이 변경 확인하세요.
+jQuery(function(){
+window.jQuery(function(){
+window.$(function(){
+*/
+/////////////////////////////////////////////////////////////
+
+</script>
+</head>
+
+<body>
+	
+	<!-- [방법1] javascript 이용 : onclink Event 발생시 호출되는 function 등록 -->
+	<div onclick="javascript:change(this)">
+		jQuery : javascript Framework<br/>
+	</div>
+	
+	<hr/>
+	
+	<!-- [방법2] jQuery Framework 이용  -->
+	<span>
+		- 모든 부라우저에서 동작하는(Cross Browser) 클라이언트 javascript Lib.<br/>
+		- DOM(Document Object Model) 과 관련되 처리를 쉽계 구현<br/>
+		- 일관된 이벤트 연결을 쉽게 구현<br/>
+		-  Ajax Application 구현을 쉽게<br/>
+	</span>
+
+</body>
+
+</html>

@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+
+<!--
+* Javascript Framework 사용 : jQuery Framework
+* 지금은 충분한 이해를 하지 못하더라도...
+* - DOM(Document Object Model: 문서객체모델) 처리가 쉬우며,
+* - 일괄성을 갖는 Event 처리
+* - 코드가 간결, 가독성이 좋다.
+* - 학습이 쉽다.
+* - etc....
+-->
+ <html lang="ko">
+
+ <head>
+  <meta charset="UTF-8">
+
+  <!-- jQuery Lib import(?) -->
+  <script src="../javascript/jquery-2.1.4.js" type="text/javascript"></script>
+  <script type="text/javascript">
+
+  $(function() {
+
+   //===> <td> element Object 에 onclick EVENT 발생시 처리할 function 등록
+   //===> :: Event 처리 CallBackFunction 을 EVENT Listener 등록
+   //===> java syntax : Anonymous Inner Class 와 비교해
+   $("td").click(function() {
+    $(this).hide();
+   });
+
+   //=========================================================
+   //===> <td> element Object 에 onclick EVENT 발생시 처리할 function 등록
+   //===> :: Event 처리 CallBackFunction 을 EVENT Listener 등록
+   //===> java syntax : Anonymous Inner Class 와 비교해
+   $("td:last").click(function() {
+    self.location = "03jQueryFramework.html";
+    // self.location = "02onlyJavaScript.html";
+    // self.location = "01onlyJavaScript.html";
+   })
+  });
+
+  </script>
+ </head>
+
+ <body>
+  <table>
+  <tr>
+   <td>1. 클릭해 보세요.</td>
+  </tr>
+   <tr>
+    <td>2. 클릭해 보세요.</td>
+   </tr>
+  <tr>
+   <td>3. 클릭해 보세요.</td>
+  </tr>
+  <tr>
+   <td>초기화면 :: 다시 Request....</td>
+  </tr>
+ </table>
+</body>
+</html>
