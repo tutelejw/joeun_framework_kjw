@@ -1,0 +1,40 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper02">
+
+    <!-- 모든 유저 정보 조회 -->
+<!--     <select id="getUserList" resultType="mybatis.service.domain.User"> -->
+    <select id="getUserList01" resultType="user" parameterType="string">
+        SELECT user_id AS userId,
+               user_name AS userName,
+               password,
+               age,
+               grade,
+               reg_date AS regDate
+        FROM users
+        WHERE user_id like #{value}
+    </select>
+
+    <!-- userId로 유저 조회 -->
+    <select id="getUserList02" parameterType="String" resultType="user">
+        SELECT user_id AS userId,
+               user_name AS userName,
+               password,
+               age,
+               grade,
+               reg_date AS regDate
+        FROM users
+        WHERE user_id like '%${value}%'
+    </select>
+
+    <!-- userId + password로 유저 이름 조회 -->
+    <select id="findUser" parameterType="string" resultType="string">
+        SELECT user_name
+        FROM users
+        WHERE ${value}
+    </select>
+
+</mapper>

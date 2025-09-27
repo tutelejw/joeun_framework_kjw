@@ -1,0 +1,69 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper05">
+
+
+
+    <!-- 2. 사용자 등록 (Dynamic SQL - grade, regDate, age null 처리 포함) -->
+    <insert id="addUser" parameterType="user">
+        INSERT INTO users (
+            user_id, user_name, password
+            , age
+            , grade
+            , reg_date
+        )
+        VALUES (
+            #{userId},
+            #{userName},
+            #{password}, 
+            #{age:INTEGER},
+            <if test="grade == 0">null</if>
+           <if test="grade != 0">#{grade}</if>,
+           #{regDate:DATE})
+    </insert>
+    
+        <!-- 3. 특정 사용자 조회 -->
+    <select id="getUser01" parameterType="string" resultType="user">
+        SELECT 
+            user_id,
+            user_name,
+            password,
+            age,
+            grade,
+            reg_date
+        FROM users
+        WHERE user_id = #{value}
+    </select>
+    
+    <!-- 1. 명시적 결과 매핑 -->
+    <resultMap id="userSelectMap" type="user">
+        <id property="userId" column="user_id" jdbcType="VARCHAR"/>
+        <result property="userName" column="user_name"  jdbcType="VARCHAR"/>
+        <result property="password" column="password"  jdbcType="VARCHAR"/>
+        <result property="age" column="age" jdbcType="INTEGER"/>
+        <result property="grade" column="grade" jdbcType="NUMERIC"/>
+        <result property="regDate" column="reg_date" jdbcType="DATE"/>
+    </resultMap>
+
+
+    <!-- 4. 사용자 전체 목록 조회 (명시적 resultMap 사용) -->
+    <select id="getUser02" parameterType="string" resultMap="userSelectMap">
+        SELECT             user_id,            user_name,            password,            age,            grade,            reg_date
+        FROM users
+        where user_id=#{value}
+    </select>
+
+    <select id="getUserList"  resultMap="userSelectMap">
+        SELECT             user_id,            user_name,            password,            age,            grade,            reg_date
+        FROM users
+    </select>
+    
+    <!-- 5. 사용자 삭제 -->
+    <delete id="removeUser" parameterType="string">
+        DELETE FROM users WHERE user_id = #{value}
+    </delete>
+
+</mapper>
