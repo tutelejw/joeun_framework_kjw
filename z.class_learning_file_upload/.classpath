@@ -6,5 +6,6 @@
 		</attributes>
 	</classpathentry>
 	<classpathentry kind="src" path="src"/>
+	<classpathentry kind="con" path="org.eclipse.jdt.USER_LIBRARY/com.springsource.org.aspectj.weaver-1.6.8.RELEASE"/>
 	<classpathentry kind="output" path="bin"/>
 </classpath>
