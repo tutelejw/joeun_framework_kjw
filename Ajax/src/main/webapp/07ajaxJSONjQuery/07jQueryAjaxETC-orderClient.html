@@ -1,0 +1,132 @@
+<!DOCTYPE html>
+<html lang="ko">
+<head>
+	<meta charset="UTF-8">
+	<title>주문 AJAX 처리 - 함수별 호출</title>
+	<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+</head>
+<body>
+
+	<form id="orderForm">
+		<p>이&nbsp;&nbsp;&nbsp;&nbsp;름 :  
+			<input type="text" size="14" name="name" id="name"/>
+		</p>
+		
+		<p>전화번호 :  
+			<input type="text" size="14" name="phone" id="phone"/>
+		</p>
+		
+		<p>주&nbsp;&nbsp;&nbsp;&nbsp;소 :</p>
+		
+		<p>
+			<textarea rows="3" cols="50" name="address" id="address">이름을 입력후 :: 여기에click...</textarea>
+		</p>
+	</form>
+
+	<!-- ✅ 요청 방식별 버튼 -->
+	<p>
+		<button id="btn_ajax_option">$.ajax() 전체 옵션</button>
+		<button id="btn_ajax_url_option">$.ajax() + URL 옵션</button>
+		<button id="btn_getJSON">$.getJSON()</button>
+		<button id="btn_post">$.post()</button>
+		<button id="btn_get">$.get()</button>
+	</p>
+
+	<script>
+		const ajaxUrl = "postJSON-orderServer.jsp";
+
+		// ✅ 공통 응답 처리 함수
+		function handleResponse(data) {
+			alert("서버 응답: " + JSON.stringify(data));
+			$("#name").val(data.name);
+			$("#phone").val(data.phone);
+			$("#address").val(data.address);
+		}
+
+		// ✅ $.ajax() 방식 (전체 옵션)
+		function use_ajax_option() {
+			$.ajax({
+				url: ajaxUrl,
+				type: "POST",
+				data: {
+					name: $("#name").val(),
+					phone: $("#phone").val()
+				},
+				dataType: "json",
+				success: handleResponse,
+				error: function (xhr, status, error) {
+					alert("에러 발생: " + error);
+				}
+			});
+		}
+
+		// ✅ $.ajax() 방식 (외부 옵션 객체 전달)
+		function use_ajax_url_option() {
+			const options = {
+				url: ajaxUrl,
+				type: "POST",
+				data: {
+					name: $("#name").val(),
+					phone: $("#phone").val()
+				},
+				dataType: "json",
+				success: handleResponse,
+				error: function (xhr, status, error) {
+					alert("에러 발생: " + error);
+				}
+			};
+			$.ajax(options);
+		}
+
+		// ✅ $.getJSON()
+		function use_getJSON() {
+			$.getJSON(ajaxUrl, {
+				name: $("#name").val(),
+				phone: $("#phone").val()
+			}, handleResponse).fail(function (jqXHR, textStatus, errorThrown) {
+				alert("getJSON 에러: " + errorThrown);
+			});
+		}
+
+		// ✅ $.post()
+		function user_post() {
+			$.post(ajaxUrl, {
+				name: $("#name").val(),
+				phone: $("#phone").val()
+			}, function (data) {
+				try {
+					const json = typeof data === "string" ? JSON.parse(data) : data;
+					handleResponse(json);
+				} catch (e) {
+					alert("post 응답 파싱 오류: " + e);
+				}
+			}, "text");
+		}
+
+		// ✅ $.get()
+		function user_get() {
+			$.get(ajaxUrl, {
+				name: $("#name").val(),
+				phone: $("#phone").val()
+			}, function (data) {
+				try {
+					const json = typeof data === "string" ? JSON.parse(data) : data;
+					handleResponse(json);
+				} catch (e) {
+					alert("get 응답 파싱 오류: " + e);
+				}
+			}, "text");
+		}
+
+		// ✅ 버튼 이벤트 연결
+		$(document).ready(function () {
+			$("#btn_ajax_option").click(use_ajax_option);
+			$("#btn_ajax_url_option").click(use_ajax_url_option);
+			$("#btn_getJSON").click(use_getJSON);
+			$("#btn_post").click(user_post);
+			$("#btn_get").click(user_get);
+		});
+	</script>
+
+</body>
+</html>

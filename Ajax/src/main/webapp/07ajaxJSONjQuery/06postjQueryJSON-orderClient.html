@@ -1,0 +1,112 @@
+<!DOCTYPE html>
+
+<html lang="ko">
+	
+<head>
+	<meta charset="UTF-8">
+
+	<!--/////////////////////////////  변경된 부분 ////////////////////////
+		//==> ajaxUtil02.js 모츌처리추가
+		//==> 1. XMLHttpRequest 객체를 얻는 function :: createRequest()
+		//==> 2. open() / callback Method지정 / send()를 처리하는 function :: openSendRequest()
+		//==> 3. trim 기능을 갖는 function :: trim()
+		///////////////////////////////////////////////////////////////////////////////	 -->
+	 <script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+	 <script type="text/javascript" src="/Ajax/10common/ajaxUtil02.js"></script>
+	 <script type="text/javascript">
+		
+		//server로 Post 방식 request
+		function getCustomerInfo01(){
+			$.ajax({
+				url : "postJSON-orderServer.jsp",
+				method : "POST",
+				data : {
+					name : $("#name").val(),
+					phone : $("#phone").val()
+				},
+				dataType :"text",
+				success : function(serverData, status){
+					alert(status);
+					alert("Server에서 받은 내용 : \n" + serverData);
+					
+					var JSONData = $.parseJSON(serverData);
+					alert("JSONData : \n"+JSONData);
+					
+					var displayValue="이름 : " + JSONData.name+"\n"
+					+"전화 : " + JSONData.phone+"\n"
+					+"주소 : " + JSONData.address;
+					$("#address").val(displayValue);
+				
+				}
+			}
+			);
+
+		}
+		
+		
+		//server로 Post 방식 request
+		function getCustomerInfo02(){
+			$.ajax({
+				url : "postJSON-orderServer.jsp",
+				method : "POST",
+				data : {
+					name : $("#name").val(),
+					phone : $("#phone").val()
+				},
+				dataType :"json",
+				success : function(JSONData, status){
+					alert(status);
+					alert("JSONData에서 받은 내용 : \n" + JSONData);
+					
+					var displayValue="이름 : " + JSONData.name+"\n"
+					+"전화 : " + JSONData.phone+"\n"
+					+"주소 : " + JSONData.address;
+					$("#address").val(displayValue);
+				
+				}
+			}
+			);
+
+		}
+		
+		
+		$(function() {
+			$("textarea").on("click", function(){
+				alert("Test01 : getCustomerInfo01()");
+				getCustomerInfo01();
+				
+				/* alert("Test02 : getCustomerInfo02()");
+				getCustomerInfo02(); */
+		});
+			$("form")[0].reset();
+		});
+		
+	</script>
+		 
+</head>
+
+<body>
+
+	<form>
+	
+		<p>이 &nbsp;&nbsp;&nbsp;&nbsp; 름  :  
+				<input type="text" size="14" name="name"  id ="name"/>
+		</p>
+		
+		<p>전화번호 :  
+				<input type="text" size="14" name="phone"  id="phone"/>
+		</p>
+	
+		<p>주 &nbsp;&nbsp;&nbsp;&nbsp; 소 : </p>  
+	
+		<p>
+			<textarea 	rows="3" cols="50" name="address" id="address">이름을 입력후 :: 여기에click...</textarea>	
+		</p>
+				
+		<p id="testInnerHtml"><input type="submit" value="주문하기" id="submit"/></p>
+		
+	</form>
+	
+</body>
+
+</html>

@@ -1,5 +1,6 @@
 package com.model2.mvc.web.product;
 
+import java.util.List;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -14,7 +15,6 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
-import org.springframework.web.multipart.MultipartFile;
 
 import com.model2.mvc.common.Page;
 import com.model2.mvc.common.Search;
@@ -138,7 +138,12 @@ public class ProductController {
 		
 		// Business logic 수행
 		Map<String , Object> map=productService.getProductList(search);
-		
+
+if (map.get("list") != null) {
+    for (Product product : (List<Product>) map.get("list")) {
+        System.out.println("[DEBUG] 상품번호 prodNo = " + product.getProdNo());
+    }
+}
 		Page resultPage = new Page( search.getCurrentPage(), ((Integer)map.get("totalCount")).intValue(), pageUnit, pageSize);
 		System.out.println(resultPage);
 		
