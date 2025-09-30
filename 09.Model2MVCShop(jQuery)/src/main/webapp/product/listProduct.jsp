@@ -1,20 +1,6 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
 
-<!-- ✅ 디버깅용 메시지 -->
-<c:if test="${!empty list}">
-  <div style="color:red;">[디버깅] list 에 데이터가 정상 있습니다.</div>
-</c:if>
-<c:if test="${empty list}">
-  <div style="color:red;">[디버깅] list가 비어 있습니다.</div>
-</c:if>
-<c:if test="${empty resultPage}">
-  <div style="color:red;">[디버깅] resultPage가 비어 있습니다.</div>
-</c:if>
-<c:if test="${empty search}">
-  <div style="color:red;">[디버깅] search가 비어 있습니다.</div>
-</c:if>
-
 <html>
 <head>
   <c:set var="menuParam" value="${param.menu}" />
@@ -28,21 +14,48 @@
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <script type="text/javascript">
-    // 페이지가 완전히 로드된 후 실행되는 jQuery 함수
+    // JSP 변수 menuParam을 JS 변수로 전달
+    var menuParam = '${menuParam}';
+
     $(document).ready(function () {
+    	  
+    	  // 상품명 빨간색으로 스타일 적용
+    	  $(".product-link").css("color", "red");
+    	  
+    	  // 상품명 클릭 이벤트
+    	  $(document).on('click', '.product-link', function () {
+    	    const prodNo = $(this).data('prodno');
+    	    const proTranCode = $(this).data('protrancode');
 
-      // 🔍 검색 버튼 클릭 시 1페이지로 이동하고 폼 제출
-      $('.product-link').on('click', function (e) {
-        // a 태그 기본 동작 유지 - 링크 href로 이동
-        // 만약 특정 처리 필요하면 여기서 구현 가능
-      });
+    	    if (!prodNo) {
+    	      alert("상품번호 정보가 없습니다!");
+    	      return;
+    	    }
 
-      $('#btnSearch').on('click', function () {
-        $('input[name="currentPage"]').val('1');
-        $('form[name="detailForm"]').submit();
-      });
+    	    if (proTranCode === '재고없음') {
+    	      alert("재고가 없습니다.");
+    	      return;
+    	    }
 
-    });
+    	    let url = '';
+    	    if (menuParam === 'manage') {
+    	      url = '/product/updateProduct?prodNo=' + prodNo;
+    	    } else {
+    	      url = '/product/getProduct?prodNo=' + prodNo;
+    	    }
+
+    	    if (url) {
+    	      window.location.href = url;
+    	    }
+    	  });
+
+    	  // 검색 버튼 클릭
+    	  $('#btnSearch').on('click', function () {
+    	    $('input[name="currentPage"]').val('1');
+    	    $('form[name="detailForm"]').submit();
+    	  });
+    	});
+
   </script>
 </head>
 
@@ -50,44 +63,9 @@
 <div style="width:98%; margin-left:10px;">
 
   <form name="detailForm" action="${pageContext.request.contextPath}/product/listProduct" method="post">
-    <!-- 타이틀 -->
-    <table width="100%" height="37" border="0" cellpadding="0" cellspacing="0">
-      <tr>
-        <td width="15"><img src="/images/ct_ttl_img01.gif" width="15" height="37" /></td>
-        <td background="/images/ct_ttl_img02.gif" style="padding-left:10px;">
-          <span class="ct_ttl01">${title}</span>
-        </td>
-        <td width="12"><img src="/images/ct_ttl_img03.gif" width="12" height="37" /></td>
-      </tr>
-    </table>
 
-    <!-- 검색 영역 -->
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
-      <tr>
-        <td align="right">
-          <select name="searchCondition" class="ct_input_g" style="width:80px;">
-            <option value="0" ${search.searchCondition == 0 ? 'selected' : ''}>상품NO</option>
-            <option value="1" ${search.searchCondition == 1 ? 'selected' : ''}>상품명</option>
-          </select>
-          <input type="text" name="searchKeyword"
-                 value="${!empty search.searchKeyword ? search.searchKeyword : ''}"
-                 class="ct_input_g" style="width:200px; height:20px;" />
-        </td>
-        <td align="right" width="70">
-          <table border="0" cellspacing="0" cellpadding="0">
-            <tr>
-              <td><img src="/images/ct_btnbg01.gif" width="17" height="23" /></td>
-              <td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
-                <a href="javascript:void(0);" id="btnSearch">검색</a>
-              </td>
-              <td><img src="/images/ct_btnbg03.gif" width="14" height="23" /></td>
-            </tr>
-          </table>
-        </td>
-      </tr>
-    </table>
+    <!-- 검색 영역 생략 가능 -->
 
-    <!-- 리스트 출력 -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
       <tr>
         <td colspan="11">
@@ -111,33 +89,19 @@
       <c:forEach var="product" items="${list}">
         <c:set var="i" value="${i + 1}" />
 
-        <!-- 분기 적용: link 변수 설정 -->
-        <c:choose>
-          <c:when test="${menuParam eq 'manage'}">
-            <c:set var="link" value="/product/updateProduct?prodNo=${product.prodNo}" />
-          </c:when>
-          <c:when test="${product.proTranCode eq '재고없음'}">
-            <c:set var="link" value="" />
-          </c:when>
-          <c:otherwise>
-            <c:set var="link" value="/product/getProduct?prodNo=${product.prodNo}" />
-          </c:otherwise>
-        </c:choose>
-
         <tr class="ct_list_pop">
           <td align="center">${i}</td>
           <td></td>
           <td align="left">
-            <c:choose>
-              <c:when test="${empty link}">
-                ${product.prodName}
-              </c:when>
-              <c:otherwise>
-                <a href="${link}" class="product-link" data-prodno="${product.prodNo}" data-action="">
-                  prodName:${product.prodName}<br/>prodNo:${product.prodNo}
-                </a>
-              </c:otherwise>
-            </c:choose>
+<span class="product-link"
+      data-prodno="${product.prodNo}"
+      data-protrancode="${product.proTranCode}"
+      style="cursor:default;">
+    ${product.prodName}
+</span>
+
+
+
           </td>
           <td></td>
           <td align="left">${product.price}</td>
@@ -150,7 +114,6 @@
       </c:forEach>
     </table>
 
-    <!-- 페이지 네비게이션 -->
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
       <tr>
         <td align="center">
@@ -159,6 +122,7 @@
         </td>
       </tr>
     </table>
+
   </form>
 
 </div>

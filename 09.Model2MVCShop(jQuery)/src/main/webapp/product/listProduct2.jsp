@@ -27,29 +27,23 @@
   <link rel="stylesheet" href="/css/admin.css" type="text/css" />
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-<script type="text/javascript">
-  // 페이지가 완전히 로드된 후 실행되는 jQuery 함수
-  $(document).ready(function () {
+  <script type="text/javascript">
+    // 페이지가 완전히 로드된 후 실행되는 jQuery 함수
+    $(document).ready(function () {
 
-    // 🔍 검색 버튼 클릭 시 1페이지로 이동하고 폼 제출
-    $('#btnSearch').on('click', function () {
-      $('#currentPage').val(1);
-      $('form[name="detailForm"]').submit();
+      // 🔍 검색 버튼 클릭 시 1페이지로 이동하고 폼 제출
+      $('.product-link').on('click', function (e) {
+        // a 태그 기본 동작 유지 - 링크 href로 이동
+        // 만약 특정 처리 필요하면 여기서 구현 가능
+      });
+
+      $('#btnSearch').on('click', function () {
+        $('input[name="currentPage"]').val('1');
+        $('form[name="detailForm"]').submit();
+      });
+
     });
-
-    // 📦 상품명 클릭 시 항상 상세보기 페이지로 이동
-    $('.product-link').on('click', function () {
-      const prodNo = $(this).data('prodno');
-
-      // prodNo가 없으면 동작하지 않음 (예외 처리)
-      if (!prodNo) return;
-
-      // 항상 상세 페이지로 이동
-      const url = `/product/getProduct?prodNo=${prodNo}`;
-      location.href = url;
-    });
-  });
-</script>
+  </script>
 </head>
 
 <body bgcolor="#ffffff" text="#000000">
@@ -116,16 +110,17 @@
       <c:set var="i" value="0" />
       <c:forEach var="product" items="${list}">
         <c:set var="i" value="${i + 1}" />
-        <c:set var="action" value="" />
+
+        <!-- 분기 적용: link 변수 설정 -->
         <c:choose>
           <c:when test="${menuParam eq 'manage'}">
-            <c:set var="action" value="update" />
+            <c:set var="link" value="/product/updateProduct?prodNo=${product.prodNo}" />
           </c:when>
           <c:when test="${product.proTranCode eq '재고없음'}">
-            <c:set var="action" value="" />
+            <c:set var="link" value="" />
           </c:when>
           <c:otherwise>
-            <c:set var="action" value="view" />
+            <c:set var="link" value="/product/getProduct?prodNo=${product.prodNo}" />
           </c:otherwise>
         </c:choose>
 
@@ -134,13 +129,12 @@
           <td></td>
           <td align="left">
             <c:choose>
-              <c:when test="${empty action}">
+              <c:when test="${empty link}">
                 ${product.prodName}
               </c:when>
               <c:otherwise>
-                <a href="javascript:void(0);" class="product-link"
-                   data-prodno="${product.prodNo}" data-action="${action}">
-                  ${product.prodName}
+                <a href="${link}" class="product-link" data-prodno="${product.prodNo}" data-action="">
+                  prodName:${product.prodName}<br/>prodNo:${product.prodNo}
                 </a>
               </c:otherwise>
             </c:choose>
