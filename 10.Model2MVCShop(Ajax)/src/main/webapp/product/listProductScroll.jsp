@@ -1,10 +1,8 @@
-<%@ page contentType="text/html; charset=UTF-8" pageEncoding="UTF-8" isELIgnored="false" %>
+<%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
-<%@ taglib prefix="fmt" uri="http://java.sun.com/jsp/jstl/fmt" %>
 
 <html>
 <head>
-  <c:set var="cPath" value="${pageContext.request.contextPath}" />
   <c:set var="menuParam" value="${param.menu}" />
   <c:set var="title" value="상품 목록 조회" />
   <c:if test="${menuParam eq 'manage'}">
@@ -12,92 +10,166 @@
   </c:if>
 
   <title>${title}</title>
-  <link rel="stylesheet" href="${cPath}/css/admin.css" type="text/css" />
+  <link rel="stylesheet" href="/css/admin.css" type="text/css" />
   <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
   <style type="text/css">
-    /* AJAX로 동적으로 삽입되는 상세 정보 */
-    .detail-content {
-      padding: 8px 12px;
-      background-color: #f8f8f8;
-      text-align: left;
-      /* CSS 주석을 존중하여 한 줄로 표시되도록 유지 */
-      white-space: nowrap;
-      overflow: hidden;
-      text-overflow: ellipsis;
-    }
-    .product-link {
-      cursor: pointer;
-    }
+  /* AJAX로 동적으로 삽입되는 상세 정보의 줄 바꿈을 방지 */
+  .detail-content {
+      white-space: nowrap; /* 줄 바꿈 방지 */
+      overflow: hidden;    /* 내용이 셀을 넘어갈 경우 숨김 */
+      text-overflow: ellipsis; /* 숨길 경우 ...으로 표시 */
+  }
   </style>
 
   <script type="text/javascript">
+    // JSP 변수 menuParam을 JS 변수로 전달
+    var menuParam = '${menuParam}';
+
     $(document).ready(function () {
 
       // 1. 상품명 빨간색으로 스타일 적용
       $(".product-link").css("color", "red");
 
-      // 2. 상품명 클릭 이벤트 (이벤트 위임 방식 사용)
+      // 2. 상품명 클릭 이벤트
       $(document).on('click', '.product-link', function () {
-        const prodNo = $(this).data('prodno');
+        const prodNo = $(this).data('prodno');  // 상품번호
+        const prodName = $(this).text().trim(); // 상품명
+
         if (!prodNo) {
           alert("상품번호 정보가 없습니다!");
           return;
         }
 
-        var $detailRow = $("#" + prodNo + "-detail");
+        // 3. 클릭된 상품 상세 정보가 이미 열려 있는지 확인
+        var $currentDetailRow = $("#" + prodNo + "-detail");  // 해당 상품번호에 대한 상세 정보 영역 (<tr>)
+        
+        // **수정된 부분:** currentDetail.is(":visible") 대신 $currentDetailRow.is(":visible") 사용
+        if ($currentDetailRow.is(":visible")) {
+          // 이미 열려 있으면, 상세 정보 숨기기
+          $currentDetailRow.hide();
+        } else {
+          // 4. AJAX 요청으로 상품 상세 정보 받아오기
+          $.ajax({
+            url: "/product/json/getProduct/" + prodNo,  // 상품 번호로 상세 정보 요청
+            method: "GET",
+            dataType: "json",
+            headers: {
+              "Accept": "application/json",
+              "Content-Type": "application/json"
+            },
+            success: function (JSONData) {
+              // 5. 받은 데이터를 HTML로 동적으로 삽입
+              if (JSONData) {
+                
+                // 줄 바꿈 <br/> 제거하고 | 구분자를 사용하여 한 줄로 표시
+                var detailText = "상품명: " + JSONData.prodName + "<br/>" 
+                    + "  가격 : " + JSONData.price  + "<br/>"
+                    + "  상태 : " + JSONData.proTranCode  + "<br/>"
+                    + "  등록일 : " + JSONData.regDateString + "<br/>";
 
-        // 이미 열려 있으면 닫기만 하고 종료
-        if ($detailRow.is(":visible")) {
-          $detailRow.hide();
-          return;
-        }
+                // 줄 바꿈 방지를 위해 detail-content 클래스를 가진 <div>로 감쌉니다.
+                var displayValue = '<div class="detail-content">' + detailText + '</div>';
 
-        // 4. AJAX 요청으로 상품 상세 정보 받아오기
-        $.ajax({
-          url: "${cPath}/product/json/getProduct/" + prodNo,
-          method: "GET",
-          dataType: "json",
-          success: function (JSONData) {
-            if (JSONData) {
-              
-              var detailText = "상품명: " + JSONData.prodName 
-                  + " | 가격 : " + JSONData.price
-                  + " | 상태 : " + JSONData.proTranCode
-                  + " | 등록일 : " + JSONData.regDate;
 
-              var displayValue = '<div class="detail-content">' + detailText + '</div>';
+                // 6. 모든 다른 상세 정보를 숨김 (열려있는 다른 상세 정보들을 닫음)
+                $(".product-detail").hide();
 
-              // 다른 상세 정보는 닫고, 현재 것만 보여주기
-              $(".product-detail").not($detailRow).hide();
-
-              $detailRow.find("td").html(displayValue);
-              $detailRow.show();
-              
-            } else {
-              alert("상품 정보를 불러오는 데 실패했습니다.");
+                // 7. 해당 상품에 대한 상세 정보 표시
+                // **수정된 부분:** <tr>과 <td>의 처리를 명확히 분리
+                var $detailRowToOpen = $("#" + prodNo +"-detail");
+                
+                // <tr> 내부의 <td>에 HTML 삽입
+                $detailRowToOpen.find("td").html(displayValue);
+                
+                // <tr> 요소 자체를 보이게 처리
+                $detailRowToOpen.show();
+                
+              } else {
+                alert("상품 정보를 불러오는 데 실패했습니다.");
+              }
+            },
+            error: function () {
+              alert("서버에서 상품 정보를 불러오는 데 오류가 발생했습니다.");
             }
-          },
-          error: function () {
-            alert("서버에서 상품 정보를 불러오는 데 오류가 발생했습니다.");
-          }
-        });
+          });
+        }
       });
 
       // 8. 검색 버튼 클릭 이벤트
-      $('#btnSearch').on('click', function (e) {
-        e.preventDefault(); 
+      $('#btnSearch').on('click', function () {
         $('input[name="currentPage"]').val('1');
         $('form[name="detailForm"]').submit();
       });
 
     });
     
-	// 페이지네이션 링크 클릭 시 사용되는 함수
+    // ============ 무한 스크롤 구현 시작 ==============
+    var currentPage = ${resultPage.currentPage}; // 현재 페이지
+    var totalCount = ${resultPage.totalCount};   // 전체 상품 수
+    var pageSize = ${search.pageSize};           // 페이지당 상품 수
+    var loading = false;                         // 중복 요청 방지
+    var isEnd = false;                           // 마지막 페이지 여부
+
+    // 스크롤 이벤트 감지
+    $(window).scroll(function () {
+      if (loading || isEnd) return;
+
+      // 하단 근접 시점
+      if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
+        loadNextPage();
+      }
+    });
+
+    function loadNextPage() {
+      loading = true;
+      currentPage++;
+
+      $.ajax({
+        url: "/product/listProductScroll",
+        method: "GET",
+        data: {
+          currentPage: currentPage,
+          pageSize: pageSize
+        },
+        success: function (html) {
+          var newRows = $(html).find("table").first().find("tr.ct_list_pop, tr.product-detail, tr[bgcolor='D6D7D6']");
+          
+          if (newRows.length === 0) {
+            isEnd = true;
+            $("#endMessage").show();
+          } else {
+            // 번호 보정 (No 열)
+            var currentCount = $("tr.ct_list_pop").length;
+            var i = 1;
+            newRows.each(function () {
+              if ($(this).hasClass("ct_list_pop")) {
+                $(this).find("td").first().text(currentCount + i);
+                i++;
+              }
+            });
+
+            $("table").first().append(newRows);
+          }
+        },
+        error: function () {
+          alert("데이터를 불러오는 중 오류가 발생했습니다.");
+        },
+        complete: function () {
+          loading = false;
+        }
+      });
+    }
+
+    // ============ 무한 스크롤 구현 끝 ==============
+
+    
+	// 검색 / page 두가지 경우 모두 Form 전송을 위해 JavaScrpt 이용  
 	function fncGetUserList(currentPage) {
-		$("#currentPage").val(currentPage);
-		$("form[name='detailForm']").submit();
+		$("#currentPage").val(currentPage)
+		$("form").attr("method" , "POST").attr("action" , "/product/listProductScroll").submit();
 	}
+
   </script>
 </head>
 
@@ -105,11 +177,6 @@
 <div style="width:98%; margin-left:10px;">
 
   <form name="detailForm" action="${pageContext.request.contextPath}/product/listProductScroll" method="post">
-    
-    <div style="margin: 10px 0; text-align: right;">
-        <input type="text" name="searchKeyword" value="${param.searchKeyword}" placeholder="검색어 입력">
-        <button type="button" id="btnSearch">검색</button>
-    </div>
 
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
       <tr>
@@ -130,42 +197,48 @@
       </tr>
       <tr><td colspan="11" bgcolor="808285" height="1"></td></tr>
 
-      <c:forEach var="product" items="${list}" varStatus="status">
+      <c:set var="i" value="0" />
+      <c:forEach var="product" items="${list}">
+        <c:set var="i" value="${i + 1}" />
+
         <tr class="ct_list_pop">
-          <td align="center">
-            ${resultPage.totalCount - ((resultPage.currentPage - 1) * resultPage.pageSize + status.index)}
-          </td>
+          <td align="center">${i}</td>
           <td></td>
           <td align="left">
-            <span class="product-link" data-prodno="${product.prodNo}">
+            <span class="product-link"
+                  data-prodno="${product.prodNo}"
+                  style="cursor:pointer;" id="${product.prodNo}">
               ${product.prodName}
             </span>
           </td>
           <td></td>
-          <td align="left"><fmt:formatNumber value="${product.price}" type="number" /></td>
+          <td align="left">${product.price}</td>
           <td></td>
-          <td align="left"><fmt:formatDate value="${product.regDate}" pattern="yyyy-MM-dd" /></td>
+          <td align="left">${product.regDate}</td>
           <td></td>
           <td align="left">${product.proTranCode}</td>
         </tr>
         <tr><td colspan="11" bgcolor="D6D7D6" height="1"></td></tr>
         <tr id="${product.prodNo}-detail" class="product-detail" style="display:none;">
-          <td colspan="11">
-            <%-- 이 안의 내용은 AJAX를 통해 동적으로 채워집니다. --%>
-          </td>
+          <td colspan="11" width="100%">
+            </td>
         </tr>
-      </c:forEach>
-    </table>
+      </c:forEach> </table>
 
     <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
       <tr>
         <td align="center">
-          <input type="hidden" id="currentPage" name="currentPage" value="${resultPage.currentPage}" />
-          <jsp:include page="../common/pageNavigator.jsp" />
+          <input type="hidden" id="currentPage" name="currentPage" value="1" />
+          <%-- <jsp:include page="../common/pageNavigator.jsp" /> --%>
         </td>
       </tr>
     </table>
+
   </form>
+
+</div>
+<div id="endMessage" style="text-align:center; padding:15px; display:none;">
+  <strong>📌 마지막 데이터입니다.</strong>
 </div>
 </body>
 </html>

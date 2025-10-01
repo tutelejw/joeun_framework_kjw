@@ -95,4 +95,25 @@ public class ProductRestController {
         productService.updateProduct(product);
         return product;
     }
+    
+    /**
+     * ✅ 5. 상품 리스트 조회 무한스크롤
+     * @param search : 검색 조건 및 페이지 정보
+     * @return 상품 리스트 + 전체 개수(JSON)
+     * 📌 예제 URL: GET /product/json/getProductList?currentPage=1&pageSize=10
+     */
+    @GetMapping("json/getProductListScroll")
+    public Map<String, Object> getProductListScroll(@ModelAttribute Search search) throws Exception {
+        System.out.println("▶ REST:: getProductListScroll() 호출됨 - page: " + search.getCurrentPage());
+        
+        if (search.getCurrentPage() == 0) {
+            search.setCurrentPage(1);
+        }
+        if (search.getPageSize() == 0) {
+            search.setPageSize(10);  // 기본 페이지 사이즈
+        }
+
+        return productService.getProductList(search);
+    }
+    
 }
