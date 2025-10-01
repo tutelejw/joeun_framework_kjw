@@ -10,12 +10,14 @@
 <script type="text/javascript">
 	$(function () {
 		// 구매 버튼
-		$(".ct_btn01").eq(0).on("click", function () {
+/* 		$(".ct_btn01").eq(0).on("click", function () { */        /* eq(0)과 eq(1)의 기준은 jQuery에서 선택된 **DOM 요소들의 순서(index)**를 기준 */
+		$("#ct_btn01_Purchase").on("click", function () {         /* 클래스(class="ct_btn01")로 지정되어 있지만, ID를 명시해서 더 명확하게 지정 */
 			location.href = "/purchase/addPurchaseView?prodNo=${product.prodNo}";
 		});
 
 		// 확인 버튼
-		$(".ct_btn01").eq(1).on("click", function () {
+/* 		$(".ct_btn01").eq(1).on("click", function () { */        /* eq(0)과 eq(1)의 기준은 jQuery에서 선택된 **DOM 요소들의 순서(index)**를 기준 */
+		$("#ct_btn01_Confirm").on("click", function () {         /* 클래스(class="ct_btn01")로 지정되어 있지만, ID를 명시해서 더 명확하게 지정 */
 			history.back();
 		});
 	});
@@ -102,13 +104,15 @@
 			<table border="0" cellspacing="0" cellpadding="0">
 				<tr>
 					<td width="17" height="23"><img src="/images/ct_btnbg01.gif" width="17" height="23"></td>
-					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
+<!-- 					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;"> -->
+					<td id="ct_btn01_Purchase" background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
 						구매
 					</td>
 					<td width="14" height="23"><img src="/images/ct_btnbg03.gif" width="14" height="23"></td>
 					<td width="30"></td>
 					<td width="17" height="23"><img src="/images/ct_btnbg01.gif" width="17" height="23"></td>
-					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
+<!-- 					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;"> -->
+					<td id="ct_btn01_Confirm" background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
 						확인
 					</td>
 					<td width="14" height="23"><img src="/images/ct_btnbg03.gif" width="14" height="23"></td>

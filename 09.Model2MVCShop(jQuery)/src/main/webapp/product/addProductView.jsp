@@ -32,12 +32,14 @@ function resetData() {
 /* 리스트 페이지에서 상품등록 클릭 시 JavaScript 함수 호출 jQuery 기반으로 버튼 클릭 이벤트를 바인딩 */
 $(document).ready(function() { 
 	// 첫 번째 버튼: 상품등록
-	$('.ct_btn01').eq(0).on('click', function() {
+/* 	$('.ct_btn01').eq(0).on('click', function() { */
+	$('#btnAddProduct').on('click', function() {
 		fncAddProduct();
 	});
 
 	// 두 번째 버튼: 취소
-	$('.ct_btn01').eq(1).on('click', function() {
+/* 	$('.ct_btn01').eq(1).on('click', function() { */
+	$('#btnCancel').on('click', function() {
 		resetData();
 	});
 });
@@ -112,11 +114,13 @@ $(document).ready(function() {
 			<table border="0" cellspacing="0" cellpadding="0">
 				<tr>
 					<td><img src="/images/ct_btnbg01.gif" width="17" height="23"/></td>
-					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">상품등록</td>
+<!-- 					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">상품등록</td> -->
+					<td id="btnAddProduct" background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">상품등록</td>
 					<td><img src="/images/ct_btnbg03.gif" width="14" height="23"/></td>
 					<td width="30"></td>
 					<td><img src="/images/ct_btnbg01.gif" width="17" height="23"/></td>
-					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">취소</td>
+<!-- 					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">취소</td> -->
+					<td id="btnCancel" background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">취소</td>
 					<td><img src="/images/ct_btnbg03.gif" width="14" height="23"/></td>
 				</tr>
 			</table>

@@ -16,15 +16,24 @@
 
 <link rel="stylesheet" href="/css/admin.css" type="text/css">
 
+<script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 <script type="text/javascript">
-<!--
-function fncUpdateProduct() {
-		
-	document.detailForm.action='/product/updateProduct';
-	document.detailForm.submit();
-}
--->
+	$(document).ready(function() {
+
+		// 수정 버튼 클릭 시
+		$('#btnUpdate').on('click', function() {
+			document.detailForm.action = '/product/updateProduct';
+			document.detailForm.submit();
+		});
+
+		// 취소 버튼 클릭 시
+		$('#btnCancel').on('click', function() {
+			history.back();  // 또는 history.go(-1);
+		});
+
+	});
 </script>
+
 </head>
 
 <body bgcolor="#ffffff" text="#000000">
@@ -127,9 +136,10 @@ function fncUpdateProduct() {
 					<td width="17" height="23">
 						<img src="/images/ct_btnbg01.gif" width="17" height="23" />
 					</td>
-					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
-						<a href="javascript:fncUpdateProduct();">수정</a>
-					</td>
+<!-- 수정 버튼 -->
+<td background="/images/ct_btnbg02.gif" id="btnUpdate" class="ct_btn01" style="padding-top:3px; cursor:default;">
+	수정
+</td>
 					<td width="14" height="23">
 						<img src="/images/ct_btnbg03.gif" width="14" height="23" />
 					</td>
@@ -137,9 +147,10 @@ function fncUpdateProduct() {
 					<td width="17" height="23">
 						<img src="/images/ct_btnbg01.gif" width="17" height="23" />
 					</td>
-					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
-						<a href="javascript:history.go(-1);">취소</a>
-					</td>
+<!-- 취소 버튼 -->
+<td background="/images/ct_btnbg02.gif" id="btnCancel" class="ct_btn01" style="padding-top:3px; cursor:default;">
+	취소
+</td>
 					<td width="14" height="23">
 						<img src="/images/ct_btnbg03.gif" width="14" height="23" />
 					</td>
