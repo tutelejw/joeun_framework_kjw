@@ -104,26 +104,44 @@
 
     });
     
-    // ============ 무한 스크롤 구현 시작 ==============
+ // ============ 무한 스크롤 구현 시작 (개선된 코드) ==============
     var currentPage = ${resultPage.currentPage}; // 현재 페이지
     var totalCount = ${resultPage.totalCount};   // 전체 상품 수
     var pageSize = ${search.pageSize};           // 페이지당 상품 수
     var loading = false;                         // 중복 요청 방지
     var isEnd = false;                           // 마지막 페이지 여부
 
-    // 스크롤 이벤트 감지
-    $(window).scroll(function () {
-      if (loading || isEnd) return;
+    // Throttle 처리용 타이머 변수
+    let throttleTimer = null;
 
-      // 하단 근접 시점
-      if ($(window).scrollTop() + $(window).height() >= $(document).height() - 100) {
-        loadNextPage();
-      }
+    // 스크롤 이벤트 감지 (Throttle 적용)
+    $(window).on('scroll', function () {
+      if (throttleTimer) return;
+
+      throttleTimer = setTimeout(function () {
+        throttleTimer = null;
+
+        if (loading || isEnd) return;
+
+        // 하단 근접 시점
+/*         if ($(window).scrollTop() + $(window).height() >= $(document).height() - 150) { */
+        if ($(window).scrollTop() + $(window).height() >= $(document).height() - 150) {
+          loadNextPage();
+        }
+      }, 300); // 300ms마다 한 번씩만 실행
     });
 
     function loadNextPage() {
       loading = true;
       currentPage++;
+
+      // 마지막 페이지 계산
+      var maxPage = Math.ceil(totalCount / pageSize);
+      if (currentPage > maxPage) {
+        isEnd = true;
+        $("#endMessage").show();
+        return;
+      }
 
       $.ajax({
         url: "/product/listProductScroll",

@@ -5,6 +5,7 @@ ProductRestController.java 의 listProductScroll 메서드 참고
  ajax jQuery를 적용 해줘
  참고한 메서드를 사용해서 방향과 수정사항을 제시해줘, 기존 메서드를 수정해도 좋아.
  신규메서드, 신규jsp는 생성하지 말아줘
+ 무한 스크롤 이벤트가 너무 민감하게 동작하지 않게 예외처리 적용.(isLoading 플래그 활용 / Throttle 또는 Debounce 적용 / 페이지 끝 조건 체크)
  데이터의 최종값을 확인 무한스크롤 종료 및 마지막데이터입니다. 문구 표시.
 
     @GetMapping("json/getProductListScroll")
