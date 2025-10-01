@@ -51,6 +51,11 @@
 			$(".Depth03:contains('상 품 검 색')").on("click", function () {
 				$(window.parent.frames["rightFrame"].document.location).attr("href", "/product/listProduct?menu=search");
 			});
+			
+			// 상품검색 무한스크롤
+			$(".Depth03:contains('상품무한스크롤')").on("click", function () {
+				$(window.parent.frames["rightFrame"].document.location).attr("href", "/product/listProductScroll?menu=search");
+			});
 
 			// 구매이력조회
 			$(".Depth03:contains('구매이력조회')").on("click", function () {
@@ -120,6 +125,9 @@
 				<table border="0" cellspacing="0" cellpadding="0" width="159">
 					<tr>
 						<td class="Depth03">상 품 검 색</td>
+					</tr>
+					<tr>
+						<td class="Depth03">상품무한스크롤</td>
 					</tr>
 
 					<c:if test="${!empty user && user.role == 'user'}">
