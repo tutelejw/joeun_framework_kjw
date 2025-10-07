@@ -2,9 +2,10 @@
 톰캣 jsp로 스크핑 프레임워크에 mybatis 프로임워크 구성이야. 
 Maven은 사용하지 않아.
 카카오 로그인을 통한 인증을 구현하고 싶어.
+우리 DB 사용자 확인 - 없으면 자동 가입 처리
 아래의 web.xml loginView.jsp 를 참고해서 loginView.jsp 에 수정사항과 서블릿에 수정사항을 가이드 해줘
 일반과 json을 위한 컨트롤러가 각각 있어 어떤걸 사용하면 좋을지 같이 참고해줘
-import가 필요사항 추가해줘
+import가 필요사항은 추가해주고 * 처리가 아닌 일괄명시해줘.
 lib 필요사항도 설명 해줘
 Kakao Developers 설정 완료(https://developers.kakao.com/)
 내 애플리케이션 → 애플리케이션 추가
