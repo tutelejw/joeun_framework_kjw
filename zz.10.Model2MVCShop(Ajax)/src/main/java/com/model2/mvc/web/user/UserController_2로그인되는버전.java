@@ -30,9 +30,9 @@ import com.model2.mvc.service.user.UserService;
 
 
 //==> 회원관리 Controller
-@Controller
-@RequestMapping("/user/*")
-public class UserController {
+//@Controller
+//@RequestMapping("/user/*")
+public class UserController_2로그인되는버전 {
 	
 	///Field
 	@Autowired
@@ -40,7 +40,7 @@ public class UserController {
 	private UserService userService;
 	//setter Method 구현 않음
 		
-	public UserController(){
+	public UserController_2로그인되는버전(){
 		System.out.println(this.getClass());
 	}
 	
@@ -184,16 +184,8 @@ public class UserController {
 	
 	// [디버깅 로그 추가] 카카오 로그인 콜백 처리
 	@RequestMapping(value="kakaoLogin", method=RequestMethod.GET)
-//	public String kakaoLogin(@RequestParam("code") String code, HttpSession session) throws Exception {
-		public String kakaoLogin(@RequestParam("code") String code
-				, HttpSession session
-				, HttpServletRequest request  // HttpServletRequest 파라미터 추가 요청받은 URL을 기반으로 동적 Redirect URI 생성
-				) throws Exception { 
+	public String kakaoLogin(@RequestParam("code") String code, HttpSession session) throws Exception {
 	    System.out.println("============== KAKAO LOGIN START ==============");
-        // ▼▼▼ [추가] 요청받은 URL을 기반으로 동적 Redirect URI 생성 ▼▼▼
-        String requestURL = request.getRequestURL().toString(); // 예: "http://127.0.0.1:8080/user/kakaoLogin"
-        System.out.println("요청받은 전체 URL: " + requestURL);
-        // ▲▲▲
 	    System.out.println("1. /user/kakaoLogin GET 요청 받음");
 
 	    if (code == null || code.trim().isEmpty()) {
@@ -204,11 +196,7 @@ public class UserController {
 	    System.out.println("2. 인가 코드 확인 완료: " + code);
 
 	    // 1. 인가 코드로 Access Token 받기
-	    // ▼▼▼ [오류 발생 지점 수정] ▼▼▼
-	    // 생성한 동적 requestURL을 두 번째 파라미터로 전달해야 합니다.
-	    String accessToken = getKakaoAccessToken(code, requestURL); 
-	    // ▲▲▲ [수정 완료] ▲▲▲
-	    
+	    String accessToken = getKakaoAccessToken(code);
 	    if (accessToken == null) {
 	        System.out.println("[ERROR] Access Token 받기 실패");
 	        // [수정된 부분] ViewResolver를 거치지 않고 JSP 파일로 직접 포워딩
@@ -260,22 +248,12 @@ public class UserController {
 	    System.out.println("============== KAKAO LOGIN END ==============");
 
 
-//	    // [핵심 수정 부분] ViewResolver를 거치지 않고 JSP 파일로 직접 포워딩
-//	    return "forward:/user/kakaoCallback.jsp";
-	    
-	    // [수정] 5. 성공 상태를 전달하며 kakaoCallback.jsp로 포워딩
-	    System.out.println("return forward:/user/kakaoCallback.jsp?login=success");	    
-//	    return "forward:/user/kakaoCallback.jsp?login=success";
-	    // ▼▼▼ [핵심 수정] forward를 redirect로 변경 ▼▼▼
-	    return "redirect:/user/kakaoCallback.jsp?login=success";
-
+	    // [핵심 수정 부분] ViewResolver를 거치지 않고 JSP 파일로 직접 포워딩
+	    return "forward:/user/kakaoCallback.jsp";
 	}
 
     // [신규 추가] 인가 코드로 Access Token을 요청하는 메소드
-//    private String getKakaoAccessToken(String code) throws Exception {
-    	private String getKakaoAccessToken(String code
-    			, String redirectURI    // redirectURI 파라미터 추가
-    			) throws Exception {
+    private String getKakaoAccessToken(String code) throws Exception {
         String requestURL = "https://kauth.kakao.com/oauth/token";
         URL url = new URL(requestURL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
@@ -288,9 +266,7 @@ public class UserController {
         StringBuilder sb = new StringBuilder();
         sb.append("grant_type=authorization_code");
         sb.append("&client_id=f38379dc4a1fd8db1c81e44d5bf62547"); // REST API 키
-//        sb.append("&redirect_uri=http://localhost:8080/user/kakaoLogin"); // 리다이렉트 URI
-        // ▼▼▼ [수정] 하드코딩된 주소 대신 파라미터로 받은 redirectURI 사용 ▼▼▼
-        sb.append("&redirect_uri=" + redirectURI);
+        sb.append("&redirect_uri=http://localhost:8080/user/kakaoLogin"); // 리다이렉트 URI
         sb.append("&code=" + code);
         bw.write(sb.toString());
         bw.flush();

@@ -11,22 +11,37 @@
 	<title>Model2 MVC Shop</title>
 	
 	<script type="text/javascript">
-		// 'message' 이벤트를 감지하는 리스너를 추가합니다.
-		window.addEventListener('message', function(event) {
-			
-			// 1. 메시지를 보낸 곳(origin)이 내 도메인과 일치하는지 확인합니다. (보안)
-			if (event.origin !== 'http://localhost:8080') {
-				return; // 일치하지 않으면 무시
-			}
-	
-			// 2. 수신한 메시지(data)가 우리가 예상한 메시지인지 확인합니다.
-			if (event.data === 'kakao-login-success') {
-				console.log('index.jsp: 카카오 로그인 성공 메시지를 수신했습니다. 페이지를 새로고침합니다.');
-				// 페이지 전체를 새로고침하여 로그인 상태를 반영합니다.
-				window.location.reload(true);
-			}
-	
-		}, false);
+	   (function() {
+	        // 1초마다 localStorage에 로그인 성공 신호가 있는지 확인
+	        const loginCheckInterval = setInterval(function() {
+	            
+	            // 'kakaoLoginStatus' 항목을 확인
+ 	            if (localStorage.getItem('kakaoLoginStatus') === 'success') {
+	                
+	                // ▼▼▼ [핵심 디버깅 코드] 신호를 감지했는지 알림창으로 확인 ▼▼▼
+	                alert('index.jsp: 로그인 성공 신호를 감지했습니다! 이제 페이지를 새로고침합니다.');
+	              
+	            	console.log('index.jsp: localStorage에서 로그인 성공 신호를 발견했습니다.');
+
+	                // 확인이 끝났으므로 신호를 삭제
+	                localStorage.removeItem('kakaoLoginStatus');
+
+	                // 더 이상 확인할 필요가 없으므로 인터벌 종료
+	                clearInterval(loginCheckInterval);
+
+	                // 페이지를 새로고침하여 로그인 상태 반영
+	                console.log('index.jsp: 페이지를 새로고침합니다.');
+	                window.location.reload(true);
+	            }
+
+	        }, 1000); // 1초 간격으로 확인
+
+	        console.log('index.jsp: localStorage 로그인 상태 감시를 시작합니다.');
+	    })();
+		
+		
+		
+		
 	</script>
 	</head>
 
