@@ -39,15 +39,7 @@
     <mvc:interceptor>
         <mvc:mapping path="/**"/>
         
-        <mvc:exclude-mapping path="/user/login"/>
-        <mvc:exclude-mapping path="/user/kakaoLogin"/>
-        <mvc:exclude-mapping path="/user/logout"/>
-        <mvc:exclude-mapping path="/user/addUser"/>
-        <mvc:exclude-mapping path="/user/checkDuplication"/>
-
-        <mvc:exclude-mapping path="/product/listProduct"/>
-
-        <mvc:exclude-mapping path="/css/**"/>
+        <mvc:exclude-mapping path="/user/login"/>      <mvc:exclude-mapping path="/user/kakaoLogin"/> <mvc:exclude-mapping path="/user/logout"/>     <mvc:exclude-mapping path="/user/addUser"/>    <mvc:exclude-mapping path="/user/checkDuplication"/> <mvc:exclude-mapping path="/css/**"/>
         <mvc:exclude-mapping path="/js/**"/>
         <mvc:exclude-mapping path="/images/**"/>
         

@@ -1,6 +1,7 @@
 package com.model2.mvc.web.user;
 
 import java.io.BufferedReader;
+import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
@@ -10,18 +11,18 @@ import java.util.Map;
 import javax.servlet.http.HttpServletRequest;
 import javax.servlet.http.HttpSession;
 
-import org.json.JSONObject;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.beans.factory.annotation.Qualifier;
 import org.springframework.beans.factory.annotation.Value;
 import org.springframework.stereotype.Controller;
 import org.springframework.ui.Model;
-import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
 
+import com.fasterxml.jackson.core.type.TypeReference;
+import com.fasterxml.jackson.databind.ObjectMapper;
 import com.model2.mvc.common.Page;
 import com.model2.mvc.common.Search;
 import com.model2.mvc.service.domain.User;
@@ -181,96 +182,135 @@ public class UserController {
 		return "forward:/user/listUser.jsp";
 	}
 	
-	
-    // 카카오 로그인 - GET 방식 처리
-    @RequestMapping(value = "kakaoLogin", method = RequestMethod.GET)
-    public String kakaoLogin(@RequestParam("code") String code, HttpSession session) throws Exception {
-        System.out.println("/user/kakaoLogin : GET");
+	// [디버깅 로그 추가] 카카오 로그인 콜백 처리
+	@RequestMapping(value="kakaoLogin", method=RequestMethod.GET)
+	public String kakaoLogin(@RequestParam("code") String code, HttpSession session) throws Exception {
+	    System.out.println("============== KAKAO LOGIN START ==============");
+	    System.out.println("1. /user/kakaoLogin GET 요청 받음");
 
-        // 1. 인가 코드로 토큰 요청
-        String accessToken = getKakaoAccessToken(code);
+	    if (code == null || code.trim().isEmpty()) {
+	        System.out.println("[ERROR] 인가 코드가 비어있습니다.");
+	        // [수정된 부분] ViewResolver를 거치지 않고 JSP 파일로 직접 포워딩
+	        return "forward:/user/kakaoCallback.jsp";
+	    }
+	    System.out.println("2. 인가 코드 확인 완료: " + code);
 
-        // 2. 토큰으로 사용자 정보 요청 및 User 객체 생성
-        User kakaoUser = getKakaoUserInfo(accessToken);
+	    // 1. 인가 코드로 Access Token 받기
+	    String accessToken = getKakaoAccessToken(code);
+	    if (accessToken == null) {
+	        System.out.println("[ERROR] Access Token 받기 실패");
+	        // [수정된 부분] ViewResolver를 거치지 않고 JSP 파일로 직접 포워딩
+	        return "forward:/user/kakaoCallback.jsp";
+	    }
+	    System.out.println("3. Access Token 받기 성공: " + accessToken);
 
-        // 3. DB 확인 및 로그인 처리
-        User dbUser = userService.getUser(kakaoUser.getUserId());
+	    // 2. Access Token으로 카카오 사용자 정보 받기
+	    Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
 
-        if (dbUser == null) {
-            // 신규 유저이면 가입 처리
-            userService.addUser(kakaoUser);
-            dbUser = kakaoUser;
-        }
+	    if (kakaoUserInfo == null) {
+	        System.out.println("[ERROR] 카카오 사용자 정보 받기 실패");
+	        // [수정된 부분] ViewResolver를 거치지 않고 JSP 파일로 직접 포워딩
+	        return "forward:/user/kakaoCallback.jsp";
+	    }
+	    System.out.println("4. 카카오 사용자 정보 받기 성공: " + kakaoUserInfo);
 
-        // 세션에 저장
-        session.setAttribute("user", dbUser);
+	    // 3. 카카오 ID로 회원 정보 확인 및 처리
+	    String kakaoId = String.valueOf(kakaoUserInfo.get("id"));
+	    User user = userService.getUser(kakaoId);
 
-        // 로그인 성공 후 팝업 닫기용 JSP 반환
-        return "kakaoLoginSuccess";
-    }
+	    // 비회원일 경우 자동 회원가입
+	    if (user == null) {
+	        System.out.println("5. 비회원 확인. 자동 회원가입을 시작합니다.");
+	        user = new User();
+	        user.setUserId(kakaoId);
+	        Map<String, Object> kakaoAccount = (Map<String, Object>) kakaoUserInfo.get("kakao_account");
+	        Map<String, Object> profile = (Map<String, Object>) kakaoAccount.get("profile");
+	        user.setUserName((String) profile.get("nickname"));
+	        if (kakaoAccount.get("email") != null) {
+	            user.setEmail((String) kakaoAccount.get("email"));
+	        }
+	        user.setPassword(kakaoId); // 비밀번호는 고유 ID로 임시 저장
+	        user.setRole("user");
+	        userService.addUser(user);
+	        System.out.println("6. 신규 회원가입 완료: " + user);
+	    } else {
+	        System.out.println("5. 기존 회원 확인: " + user.getUserId());
+	    }
 
-    // 인가 코드로 access_token 요청
+	    // 4. 세션에 로그인 정보 저장
+	    session.setAttribute("user", user);
+	    User sessionUser = (User) session.getAttribute("user");
+	    if (sessionUser != null && sessionUser.getUserId().equals(kakaoId)) {
+	        System.out.println("7. 세션 저장 성공! User ID: " + sessionUser.getUserId());
+	    } else {
+	        System.out.println("[ERROR] 세션 저장 실패!");
+	    }
+	    System.out.println("============== KAKAO LOGIN END ==============");
+
+
+	    // [핵심 수정 부분] ViewResolver를 거치지 않고 JSP 파일로 직접 포워딩
+	    return "forward:/user/kakaoCallback.jsp";
+	}
+
+    // [신규 추가] 인가 코드로 Access Token을 요청하는 메소드
     private String getKakaoAccessToken(String code) throws Exception {
-        String clientId = "f38379dc4a1fd8db1c81e44d5bf62547";
-        String redirectUri = "http://localhost:8080/user/kakaoLogin";
-
-        String requestUrl = "https://kauth.kakao.com/oauth/token";
-        String params = "grant_type=authorization_code"
-                + "&client_id=" + clientId
-                + "&redirect_uri=" + redirectUri
-                + "&code=" + code;
-
-        URL url = new URL(requestUrl);
+        String requestURL = "https://kauth.kakao.com/oauth/token";
+        URL url = new URL(requestURL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+        
         conn.setRequestMethod("POST");
         conn.setDoOutput(true);
 
-        try (OutputStreamWriter writer = new OutputStreamWriter(conn.getOutputStream())) {
-            writer.write(params);
-            writer.flush();
-        }
+        // POST 요청 본문 작성
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
+        StringBuilder sb = new StringBuilder();
+        sb.append("grant_type=authorization_code");
+        sb.append("&client_id=f38379dc4a1fd8db1c81e44d5bf62547"); // REST API 키
+        sb.append("&redirect_uri=http://localhost:8080/user/kakaoLogin"); // 리다이렉트 URI
+        sb.append("&code=" + code);
+        bw.write(sb.toString());
+        bw.flush();
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
-        }
-        reader.close();
+        if (conn.getResponseCode() == 200) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line = "";
+            StringBuilder result = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                result.append(line);
+            }
+            br.close();
+            bw.close();
 
-        JSONObject json = new JSONObject(response.toString());
-        return json.getString("access_token");
+            ObjectMapper objectMapper = new ObjectMapper();
+            Map<String, Object> jsonMap = objectMapper.readValue(result.toString(), new TypeReference<Map<String, Object>>() {});
+            
+            return (String) jsonMap.get("access_token");
+        }
+        return null;
     }
-
-    // access_token으로 사용자 정보 요청 + User 객체 생성
-    private User getKakaoUserInfo(String accessToken) throws Exception {
-        URL url = new URL("https://kapi.kakao.com/v2/user/me");
+    
+    // [신규 추가] Access Token으로 사용자 정보를 요청하는 메소드 (UserRestController의 것과 동일)
+    private Map<String, Object> getKakaoUserInfo(String accessToken) throws Exception {
+        String requestURL = "https://kapi.kakao.com/v2/user/me";
+        URL url = new URL(requestURL);
         HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("GET");
+        
+        conn.setRequestMethod("POST");
+        conn.setDoOutput(true);
         conn.setRequestProperty("Authorization", "Bearer " + accessToken);
 
-        BufferedReader reader = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-        StringBuilder response = new StringBuilder();
-        String line;
-        while ((line = reader.readLine()) != null) {
-            response.append(line);
+        if (conn.getResponseCode() == 200) {
+            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+            String line = "";
+            StringBuilder result = new StringBuilder();
+            while ((line = br.readLine()) != null) {
+                result.append(line);
+            }
+            br.close();
+            
+            ObjectMapper objectMapper = new ObjectMapper();
+            return objectMapper.readValue(result.toString(), new TypeReference<Map<String, Object>>() {});
         }
-        reader.close();
-
-        JSONObject json = new JSONObject(response.toString());
-
-        String kakaoId = json.get("id").toString();
-        JSONObject kakaoAccount = json.getJSONObject("kakao_account");
-        String email = kakaoAccount.optString("email", kakaoId + "@kakao.local");
-
-        // User 객체 생성
-        User user = new User();
-        user.setUserId("kakao_" + kakaoId);
-        user.setUserName("KakaoUser");
-        user.setPassword("kakao_dummy");
-        user.setEmail(email);
-
-        return user;
+        return null;
     }
-
 }
