@@ -63,6 +63,7 @@ FROM user_tab_columns
 WHERE table_name = 'USERS';
 
 
+select * from users;
 
 DROP TABLE transaction;
 DROP TABLE product;
