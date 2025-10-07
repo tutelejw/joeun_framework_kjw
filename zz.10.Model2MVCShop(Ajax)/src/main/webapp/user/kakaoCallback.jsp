@@ -30,7 +30,7 @@
         }
 
         console.log("kakaoCallback.jsp: 팝업을 닫습니다.");
-        //window.close();
+        window.close();
     };
 </script>
 </head>
