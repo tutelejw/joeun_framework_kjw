@@ -1,0 +1,675 @@
+자바 웹앱으로 개발 중이야.
+톰캣 jsp로 스크핑 프레임워크에 mybatis 프로임워크 구성이야.
+카카오 로그인을 통한 인증을 구현하고 싶어.
+아래의 web.xml loginView.jsp 를 참고해서 loginView.jsp 에 수정사항과 서블릿에 수정사항을 가이드 해줘
+일반과 json을 위한 컨트롤러가 각각 있어 어떤걸 사용하면 좋을지 같이 참고해줘
+import 필요 사항 추가해줘 .*처리 하지말고 각각 명시해줘. 다운로드필요사항도 제시해줘
+Kakao Developers 설정 완료(https://developers.kakao.com/)
+내 애플리케이션 → 애플리케이션 추가
+Kakao 앱의 REST API 키 발급함.
+플랫폼 > 웹 플랫폼 추가
+사이트 도메인: http://localhost:8080
+Redirect URI  : http://localhost:8080/user/kakaoLogin
+카카오 REST API 키  : f38379dc4a1fd8db1c81e44d5bf62547
+카카오 JavaScript 키  : 8cff1ee0835498e88c05badb308f0dbd
+카카오SDK를 다운받지 않고 연동하게 적용
+카카오 로그인시 팝업 통신 (부모창 <-> 팝업창) 적용 오류 생기지 않게 더 확실하게 확인해줘
+메이븐은 사용하지 않아.
+
+<?xml version="1.0" encoding="UTF-8"?>
+
+<web-app xmlns="http://xmlns.jcp.org/xml/ns/javaee"
+  xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+  xsi:schemaLocation="http://xmlns.jcp.org/xml/ns/javaee
+                      http://xmlns.jcp.org/xml/ns/javaee/web-app_4_0.xsd"
+  version="4.0"
+  metadata-complete="true">
+	
+	<!--	:: ContextLoaderListener 을 이용한 Business logic  Meta-Data 등록   -->		
+	<listener>
+		<listener-class>org.springframework.web.context.ContextLoaderListener	</listener-class>
+	</listener>		
+	 
+	<context-param>
+		<param-name>contextConfigLocation</param-name>
+		<param-value>
+			classpath:config/context-aspect.xml,
+			classpath:config/context-common.xml,
+			classpath:config/context-mybatis.xml,
+			classpath:config/context-transaction.xml
+		</param-value>
+	</context-param>
+		
+	<!-- :: Spring API 에 제공하는 CharacterEncodingFilter 로 한글 인코딩처리 -->	
+	<filter>
+		<filter-name>encodingFilter</filter-name>
+		<filter-class>	org.springframework.web.filter.CharacterEncodingFilter</filter-class>
+		<init-param>
+			<param-name>encoding</param-name>
+			<param-value>UTF-8</param-value>
+		</init-param>
+	</filter>
+	
+	<filter-mapping>
+		<filter-name>encodingFilter</filter-name>
+		<url-pattern>/*</url-pattern>
+	</filter-mapping>	
+
+ 	 <!-- ::SpringMVC 에서의 Front Controller(단일인입점)  DispatcherServlet 선언 -->
+	  <servlet>
+		    <servlet-name>action</servlet-name>
+		    <servlet-class>org.springframework.web.servlet.DispatcherServlet</servlet-class>
+		    
+		    <init-param>
+		      <param-name>contextConfigLocation</param-name>
+		      <param-value>/config/springMVC/common-servlet.xml</param-value>
+		      <!-- Servlet Meta-data / Spring Meta-data 위치 분리함 -->
+		    </init-param>
+		    
+		    <load-on-startup>1</load-on-startup>
+  </servlet>
+  
+	<!-- 	URI : / 형식  Servlet Mapping -->
+	<servlet-mapping>
+	  <servlet-name>action</servlet-name>
+	  <url-pattern>/</url-pattern>
+	</servlet-mapping>
+	  
+	<welcome-file-list>
+		<welcome-file>index.jsp</welcome-file> 
+		<welcome-file>index.html</welcome-file>
+		<welcome-file>index.htm</welcome-file>
+    </welcome-file-list>
+    	
+</web-app>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+<%@ page contentType="text/html; charset=UTF-8" %>
+<%@ page pageEncoding="UTF-8" %>
+
+<!DOCTYPE html>
+<html>
+
+<head>
+	<meta charset="UTF-8">
+	
+	<title>로그인 화면</title>
+	
+	<link rel="stylesheet" href="/css/admin.css" type="text/css">
+	
+	<!-- CDN(Content Delivery Network) 호스트 사용 -->
+	<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
+	<script type="text/javascript">
+	   
+		$( function() {
+			
+			//==> DOM Object GET 3가지 방법 ==> 1. $(tagName) : 2.(#id) : 3.$(.className)
+			$("#userId").focus();
+			
+			//==>"Login"  Event 연결
+			$("img[src='/images/btn_login.gif']").on("click" , function() {
+
+				var id=$("input:text").val();
+				var pw=$("input:password").val();
+				
+				if(id == null || id.length <1) {
+					alert('ID 를 입력하지 않으셨습니다.');
+					$("input:text").focus();
+					return;
+				}
+				
+				if(pw == null || pw.length <1) {
+					alert('패스워드를 입력하지 않으셨습니다.');
+					$("input:password").focus();
+					return;
+				}
+				
+				////////////////////////////////////////////////// 추가 , 변경된 부분 ////////////////////////////////////////////////////////////
+				//$("form").attr("method","POST").attr("action","/user/login").attr("target","_parent").submit();
+				////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+				$.ajax( 
+						{
+							url : "/user/json/login",
+							method : "POST" ,
+							dataType : "json" ,
+							headers : {
+								"Accept" : "application/json",
+								"Content-Type" : "application/json"
+							},
+							data : JSON.stringify({
+								userId : id,
+								password : pw
+							}),
+							success : function(JSONData , status) {
+
+								//Debug...
+								//alert(status);
+								//alert("JSONData : \n"+JSONData);
+								//alert( "JSON.stringify(JSONData) : \n"+JSON.stringify(JSONData) );
+								//alert( JSONData != null );
+								
+								if( JSONData != null ){
+									//[방법1]
+									//$(window.parent.document.location).attr("href","/index.jsp");
+									
+									//[방법2]
+									//window.parent.document.location.reload();
+									
+									//[방법3]
+									$(window.parent.frames["topFrame"].document.location).attr("href","/layout/top.jsp");
+									$(window.parent.frames["leftFrame"].document.location).attr("href","/layout/left.jsp");
+									$(window.parent.frames["rightFrame"].document.location).attr("href","/user/getUser?userId="+JSONData.userId);
+									
+									//==> 방법 1 , 2 , 3 결과 학인
+								}else{
+									alert("아이디 , 패스워드를 확인하시고 다시 로그인...");
+								}
+							}
+					}); 
+					////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////////
+								
+			});
+		});
+		
+		
+		//============= 회원원가입화면이동 =============
+		$( function() {
+			//==> 추가된부분 : "addUser"  Event 연결
+			$("img[src='/images/btn_add.gif']").on("click" , function() {
+				self.location = "/user/addUser"
+			});
+		});
+		
+	</script>		
+	
+</head>
+
+<body bgcolor="#ffffff" text="#000000" >
+
+<form>
+
+<div align="center" >
+
+<TABLE WITH="100%" HEIGHT="100%" BORDER="0" CELLPADDING="0" CELLSPACING="0">
+<TR>
+<TD ALIGN="CENTER" VALIGN="MIDDLE">
+
+<table width="650" height="390" border="5" cellpadding="0" cellspacing="0" bordercolor="#D6CDB7">
+  <tr> 
+    <td width="10" height="5" align="left" valign="top" bordercolor="#D6CDB7">
+    	<table width="650" height="390" border="0" cellpadding="0" cellspacing="0">
+        <tr>
+          <td width="305">
+            <img src="/images/logo-spring.png" width="305" height="390"/>
+          </td>
+          <td width="345" align="left" valign="top" background="/images/login02.gif">
+          	<table width="100%" height="220" border="0" cellpadding="0" cellspacing="0">
+              <tr> 
+                <td width="30" height="100">&nbsp;</td>
+                <td width="100" height="100">&nbsp;</td>
+                <td height="100">&nbsp;</td>
+                <td width="20" height="100">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td width="30" height="50">&nbsp;</td>
+                <td width="100" height="50">
+                	<img src="/images/text_login.gif" width="91" height="32"/>
+                </td>
+                <td height="50">&nbsp;</td>
+                <td width="20" height="50">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td width="200" height="50" colspan="4"></td>
+              </tr>              
+              <tr> 
+                <td width="30" height="30">&nbsp;</td>
+                <td width="100" height="30">
+                	<img src="/images/text_id.gif" width="100" height="30"/>
+                </td>
+                <td height="30">
+                  <input 	type="text" name="userId"  id="userId"  class="ct_input_g" 
+                  				style="width:180px; height:19px"  maxLength='50'/>          
+          		</td>
+                <td width="20" height="30">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td width="30" height="30">&nbsp;</td>
+                <td width="100" height="30">
+                	<img src="/images/text_pas.gif" width="100" height="30"/>
+                </td>
+                <td height="30">                    
+                    <input 	type="password" name="password" class="ct_input_g" 
+                    				style="width:180px; height:19px"  maxLength="50" />
+                </td>
+                <td width="20" height="30">&nbsp;</td>
+              </tr>
+              <tr> 
+                <td width="30" height="20">&nbsp;</td>
+                <td width="100" height="20">&nbsp;</td>
+                <td height="20" align="center">
+   				    <table width="136" height="20" border="0" cellpadding="0" cellspacing="0">
+                       <tr> 
+                         <td width="56">
+                         		<img src="/images/btn_login.gif" width="56" height="20" border="0"/>
+                         </td>
+                         <td width="10">&nbsp;</td>
+                         <td width="70">
+                       			<img src="/images/btn_add.gif" width="70" height="20" border="0">
+                         </td>
+                       </tr>
+                     </table>
+                 </td>
+                 <td width="20" height="20">&nbsp;</td>
+                </tr>
+              </table>
+            </td>
+      	</tr>                            
+      </table>
+      </td>
+  </tr>
+</table>
+</TD>
+</TR>
+</TABLE>
+
+</div>
+
+</form>
+
+</body>
+
+</html>
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+package com.model2.mvc.web.user;
+
+import java.util.HashMap;
+import java.util.Map;
+import java.util.stream.Collectors;
+
+import javax.servlet.http.HttpServletRequest;
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.beans.factory.annotation.Value;
+import org.springframework.stereotype.Controller;
+import org.springframework.ui.Model;
+import org.springframework.web.bind.annotation.GetMapping;
+import org.springframework.web.bind.annotation.ModelAttribute;
+import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestMethod;
+import org.springframework.web.bind.annotation.RequestParam;
+
+import com.model2.mvc.common.Page;
+import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.User;
+import com.model2.mvc.service.user.UserService;
+
+
+//==> 회원관리 Controller
+@Controller
+@RequestMapping("/user/*")
+public class UserController {
+	
+	///Field
+	@Autowired
+	@Qualifier("userServiceImpl")
+	private UserService userService;
+	//setter Method 구현 않음
+		
+	public UserController(){
+		System.out.println(this.getClass());
+	}
+	
+	@Value("#{commonProperties['pageUnit']}")
+	int pageUnit;
+	@Value("#{commonProperties['pageSize']}")
+	int pageSize;
+	
+	
+	@RequestMapping( value="addUser", method=RequestMethod.GET )
+	public String addUser() throws Exception{
+	
+		System.out.println("/user/addUser : GET");
+		
+		return "redirect:/user/addUserView.jsp";
+	}
+	
+	@RequestMapping( value="addUser", method=RequestMethod.POST )
+	public String addUser( @ModelAttribute("user") User user ) throws Exception {
+
+		System.out.println("/user/addUser : POST");
+		//Business Logic
+		userService.addUser(user);
+		
+		return "redirect:/user/loginView.jsp";
+	}
+	
+
+	@RequestMapping( value="getUser", method=RequestMethod.GET )
+	public String getUser( @RequestParam("userId") String userId , Model model ) throws Exception {
+		
+		System.out.println("/user/getUser : GET");
+		//Business Logic
+		User user = userService.getUser(userId);
+		// Model 과 View 연결
+		model.addAttribute("user", user);
+		
+		return "forward:/user/getUser.jsp";
+	}
+	
+
+	@RequestMapping( value="updateUser", method=RequestMethod.GET )
+	public String updateUser( @RequestParam("userId") String userId , Model model ) throws Exception{
+
+		System.out.println("/user/updateUser : GET");
+		//Business Logic
+		User user = userService.getUser(userId);
+		// Model 과 View 연결
+		model.addAttribute("user", user);
+		
+		return "forward:/user/updateUser.jsp";
+	}
+
+	@RequestMapping( value="updateUser", method=RequestMethod.POST )
+	public String updateUser( @ModelAttribute("user") User user , Model model , HttpSession session) throws Exception{
+
+		System.out.println("/user/updateUser : POST");
+		//Business Logic
+		userService.updateUser(user);
+		
+		String sessionId=((User)session.getAttribute("user")).getUserId();
+		if(sessionId.equals(user.getUserId())){
+			session.setAttribute("user", user);
+		}
+		
+		return "redirect:/user/getUser?userId="+user.getUserId();
+	}
+	
+	
+	@RequestMapping( value="login", method=RequestMethod.GET )
+	public String login() throws Exception{
+		
+		System.out.println("/user/logon : GET");
+
+		return "redirect:/user/loginView.jsp";
+	}
+	
+	@RequestMapping( value="login", method=RequestMethod.POST )
+	public String login(@ModelAttribute("user") User user , HttpSession session ) throws Exception{
+		
+		System.out.println("/user/login : POST");
+		//Business Logic
+		User dbUser=userService.getUser(user.getUserId());
+		
+		if( user.getPassword().equals(dbUser.getPassword())){
+			session.setAttribute("user", dbUser);
+		}
+		
+		return "redirect:/index.jsp";
+	}
+		
+	
+	@RequestMapping( value="logout", method=RequestMethod.GET )
+	public String logout(HttpSession session ) throws Exception{
+		
+		System.out.println("/user/logout : POST");
+		
+		session.invalidate();
+		
+		return "redirect:/index.jsp";
+	}
+	
+	
+	@RequestMapping( value="checkDuplication", method=RequestMethod.POST )
+	public String checkDuplication( @RequestParam("userId") String userId , Model model ) throws Exception{
+		
+		System.out.println("/user/checkDuplication : POST");
+		//Business Logic
+		boolean result=userService.checkDuplication(userId);
+		// Model 과 View 연결
+		model.addAttribute("result", new Boolean(result));
+		model.addAttribute("userId", userId);
+
+		return "forward:/user/checkDuplication.jsp";
+	}
+
+	
+	@RequestMapping( value="listUser" )
+	public String listUser( @ModelAttribute("search") Search search , Model model , HttpServletRequest request) throws Exception{
+		
+		System.out.println("/user/listUser : GET / POST");
+		
+		if(search.getCurrentPage() ==0 ){
+			search.setCurrentPage(1);
+		}
+		search.setPageSize(pageSize);
+		
+		// Business logic 수행
+		Map<String , Object> map=userService.getUserList(search);
+		
+		Page resultPage = new Page( search.getCurrentPage(), ((Integer)map.get("totalCount")).intValue(), pageUnit, pageSize);
+		System.out.println(resultPage);
+		
+		// Model 과 View 연결
+		model.addAttribute("list", map.get("list"));
+		model.addAttribute("resultPage", resultPage);
+		model.addAttribute("search", search);
+		
+		return "forward:/user/listUser.jsp";
+	}
+	
+	
+
+}
+
+
+
+
+
+
+
+package com.model2.mvc.web.user;
+
+import java.util.Map;
+
+import javax.servlet.http.HttpSession;
+
+import org.springframework.beans.factory.annotation.Autowired;
+import org.springframework.beans.factory.annotation.Qualifier;
+import org.springframework.web.bind.annotation.*;
+
+import com.model2.mvc.service.domain.User;
+import com.model2.mvc.service.user.UserService;
+import com.model2.mvc.common.Search;
+
+
+@RestController
+@RequestMapping("/user/*")
+public class UserRestController {
+
+    // UserService 주입 (userServiceImpl 빈을 주입)
+    @Autowired
+    @Qualifier("userServiceImpl")
+    private UserService userService;
+
+    public UserRestController() {
+        System.out.println("==> UserRestController 실행됨 : " + this.getClass());
+    }
+
+    @PostMapping("json/addUser")
+    public boolean addUser(@RequestBody User user) throws Exception {
+        System.out.println("/user/json/addUser : POST 호출됨");
+        userService.addUser(user);
+        return true;
+    }
+
+
+    @PostMapping("json/login")
+    public User login(@RequestBody User user, HttpSession session) throws Exception {
+        System.out.println("/user/json/login : POST 호출됨");
+
+        // 사용자 조회
+        User dbUser = userService.getUser(user.getUserId());
+
+        // 패스워드 일치 시 세션 저장
+        if (dbUser != null && user.getPassword().equals(dbUser.getPassword())) {
+            session.setAttribute("user", dbUser);
+        }
+
+        return dbUser;
+    }
+
+    @GetMapping("json/getUser/{userId}")
+    public User getUser(@PathVariable String userId) throws Exception {
+        System.out.println("/user/json/getUser : GET 호출됨");
+        return userService.getUser(userId);
+    }
+
+
+    @PostMapping("json/getUserList")
+    public Map<String, Object> getUserList(@RequestBody Search search) throws Exception {
+        System.out.println("/user/json/getUserList : POST 호출됨");
+        return userService.getUserList(search);
+    }
+
+
+    @PostMapping("json/updateUser")
+    public boolean updateUser(@RequestBody User user) throws Exception {
+        System.out.println("/user/json/updateUser : POST 호출됨");
+        userService.updateUser(user);
+        return true;
+    }
+
+
+    @GetMapping("json/checkDuplication/{userId}")
+    public boolean checkDuplication(@PathVariable String userId) throws Exception {
+        System.out.println("/user/json/checkDuplication : GET 호출됨");
+        return userService.checkDuplication(userId);
+    }
+}
+
+
+
+
+
+
+<?xml version="1.0" encoding="UTF-8" ?>
+
+<!DOCTYPE mapper
+		PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+		"http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="UserMapper">
+ 	
+ 	
+	<resultMap id="userSelectMap" type="user">
+		<result property="userId" 			column="user_id" 			jdbcType="VARCHAR"/>
+		<result property="userName"	column="user_name" 		jdbcType="VARCHAR" />
+		<result property="password" 	column="password" 		jdbcType="VARCHAR" />
+		<result property="role" 				column="role" 					jdbcType="VARCHAR" />
+		<result property="ssn" 				column="ssn" 					jdbcType="VARCHAR" />
+		<result property="phone" 			column="cell_phone" 		jdbcType="VARCHAR" />
+		<result property="addr" 				column="addr" 					jdbcType="VARCHAR" />
+		<result property="email" 			column="email" 				jdbcType="NUMERIC"  />
+		<result property="regDate" 		column="reg_date" 			jdbcType="DATE" />
+	</resultMap>
+	
+	<!-- SQL : INSERT -->
+	<insert 	id="addUser"		parameterType="user" >
+	 	INSERT
+		INTO users( user_id , user_name , password , role , ssn, cell_phone, addr, email , reg_date) 
+		VALUES	 (	#{userId} , #{userName} , #{password} , 'user' , #{ssn:VARCHAR} , 
+							#{phone:VARCHAR} , #{addr:VARCHAR} , #{email:VARCHAR} , SYSDATE )
+	 </insert>
+	 
+	 <!-- SQL : SELECT ONE -->
+	 <select 	id="getUser"	parameterType="string"	resultMap="userSelectMap">
+		SELECT
+		user_id , user_name , password , role ,  cell_phone ,  addr , email , reg_date 		
+		FROM users 
+		WHERE user_id = #{value}
+	 </select>
+	 
+	 <!-- SQL : UPDATE -->
+	 <update	id="updateUser"	parameterType="user" >
+	   	UPDATE users
+	   	<set>
+	   		user_name 	= #{userName} ,
+			cell_phone	= #{phone},
+			addr 				= #{addr} ,
+			email				=	#{email}
+	   	</set>
+	   	WHERE user_id = #{userId}
+	 </update>
+		 
+	<!-- SQL : SELECT LIST -->
+	<select  id="getUserList"  parameterType="search"	resultMap="userSelectMap">
+	  	SELECT *
+	  	FROM (	SELECT inner_table.* , ROWNUM AS row_seq
+	  					FROM		(	SELECT user_id , user_name , email
+											FROM users
+											<if test="searchCondition != null">
+												<where>
+													<if test="searchCondition == 0 and searchKeyword !='' ">
+										 				user_id = #{searchKeyword}
+													</if>
+													<if test="searchCondition == 1 and searchKeyword !='' ">
+										 				user_name = #{searchKeyword}
+													</if>
+												</where>
+											</if>
+											ORDER BY user_id ) inner_table
+						WHERE ROWNUM &lt;= #{endRowNum} )
+		WHERE row_seq BETWEEN #{startRowNum} AND #{endRowNum} 
+	 </select>
+
+	
+	<!-- SQL : SELECT ROW Count -->	 
+	 <select  id="getTotalCount"  parameterType="search"	 resultType="int">
+	  	SELECT COUNT(*)
+	  	FROM(	SELECT user_id , user_name , email
+						FROM users
+						<if test="searchCondition != null">
+							<where>
+								<if test="searchCondition == 0 and searchKeyword !='' ">
+						 			user_id = #{searchKeyword}
+								</if>
+								<if test="searchCondition == 1 and searchKeyword !='' ">
+						 		user_name = #{searchKeyword}
+								</if>
+							</where>
+						</if> ) countTable						
+	 </select>
+	 
+</mapper>

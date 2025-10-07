@@ -1,0 +1,190 @@
+=================================================
+PRD : Product Requirement Document : 제품요구서 작성 : ???
+--------------------------------------------------
+-- 용어에 익숙해지자 
+: 구현요구사항을 AI 에 전달 하는 skill 을 익힘.
+: 요구사항을 정확히 지시 : Prompt Detail
+: 직접 지시가 아니라 AI 와 협업 
+   예> 이렇게 하려면 어떻게 해야해 ? 
+         : 난 알고 있지만. AI 가 생각하고 해결 할 수 있도록
+
+: Low-code / Prompt Engineering / Ai-assisted coding
+=================================================
+
+
+##### Prompt > ProductRestController.java 구현
+
+
+0. ProductService.java
+
+package com.model2.mvc.service.product;
+
+import java.util.Map;
+
+import com.model2.mvc.common.Search;
+import com.model2.mvc.service.domain.Product;
+import com.model2.mvc.service.domain.User;
+
+
+//==> 회원관리에서 서비스할 내용 추상화/캡슐화한 Service  Interface Definition  
+public interface ProductService {
+	
+	// 상품추가
+	public void addProduct(Product product) throws Exception;
+	
+	// 상품정보확인
+	public Product getProduct(int prodNo) throws Exception;
+	
+	// 상품정보리스트 
+	public Map<String , Object> getProductList(Search search) throws Exception;
+	
+	// 상품정보수정
+	public void updateProduct(Product product) throws Exception;
+	
+	//게시판 Page 처리를 위한 전체Row(totalCount)  return
+	public int getTotalCount(Search search) throws Exception ;
+	
+}
+
+
+1. Product.java 
+
+package com.model2.mvc.service.domain;
+
+import java.sql.Date;
+
+//==>회원정보를 모델링(추상화/캡슐화)한 Bean
+public class Product {
+	
+	///Field
+	private int prodNo;
+	private String prodName;
+	private String prodDetail;
+	private String manuDate;
+	private int price;
+	private String fileName; 
+	private Date regDate;
+	private String proTranCode;
+	
+	///Constructor
+	public Product() {
+	}
+	///Method 
+	
+	public String getProTranCode() { return proTranCode;}
+	public void setProTranCode(String proTranCode) {this.proTranCode=proTranCode;}
+	
+	public int getProdNo() {		return prodNo;	}
+	public void setProdNo(int prodNo) {		this.prodNo=prodNo;	}
+	
+	public String getProdName() { return prodName;}
+	public void setProdName(String prodName) { this.prodName=prodName; }
+	
+	public String getProdDetail() { return prodDetail; }
+	public void setProdDetail(String prodDetail) {this.prodDetail=prodDetail;}
+	public String getManuDate() { return manuDate; }
+	public void setManuDate(String manuDate) { this.manuDate=manuDate; }
+	
+	public int getPrice() { return price; }
+	public void setPrice(int price) {this.price = price; }
+	
+	public String getFileName() { return fileName; }
+	public void setFileName(String fileName) { this.fileName=fileName;}
+		
+	public Date getRegDate() { return regDate; }
+	public void setRegDate(Date regDate) { this.regDate=regDate; }
+		
+	@Override
+	public String toString() {
+		return "Product Domain : " +getClass().getSimpleName() + " :: " + prodNo + " / " +  prodName + " / " +  manuDate + " / " +  price + " / " +  fileName + " / " + regDate ;
+	}
+}
+
+
+2. Search.java
+
+package com.model2.mvc.common;
+
+
+//==>리스트화면을 모델링(추상화/캡슐화)한 Bean 
+public class Search {
+	
+	///Field
+	private int currentPage;
+	private String searchCondition;
+	private String searchKeyword;
+	private int pageSize;
+	//==> 리스트화면 currentPage에 해당하는 회원정보를 ROWNUM 사용 SELECT 위해 추가된 Field 
+	//==> UserMapper.xml 의 
+	//==> <select  id="getUserList"  parameterType="search"	resultMap="userSelectMap">
+	//==> 참조
+	private int endRowNum;
+	private int startRowNum;
+	
+	///Constructor
+	public Search() {
+	}
+	
+	///Method
+	public int getPageSize() {
+		return pageSize;
+	}
+	public void setPageSize(int paseSize) {
+		this.pageSize = paseSize;
+	}
+	
+	public int getCurrentPage() {
+		return currentPage;
+	}
+	public void setCurrentPage(int currentPage) {
+		this.currentPage = currentPage;
+	}
+
+	public String getSearchCondition() {
+		return searchCondition;
+	}
+	public void setSearchCondition(String searchCondition) {
+		this.searchCondition = searchCondition;
+	}
+	
+	public String getSearchKeyword() {
+		return searchKeyword;
+	}
+	public void setSearchKeyword(String searchKeyword) {
+		this.searchKeyword = searchKeyword;
+	}
+	
+	//==> Select Query 시 ROWNUM 마지막 값 
+	public int getEndRowNum() {
+		return getCurrentPage()*getPageSize();
+	}
+	//==> Select Query 시 ROWNUM 시작 값
+	public int getStartRowNum() {
+		return (getCurrentPage()-1)*getPageSize()+1;
+	}
+
+	@Override
+	public String toString() {
+		return "Search [currentPage=" + currentPage + ", searchCondition="
+				+ searchCondition + ", searchKeyword=" + searchKeyword
+				+ ", pageSize=" + pageSize + ", endRowNum=" + endRowNum
+				+ ", startRowNum=" + startRowNum + "]";
+	}
+}
+
+
+3. ProductService 각각의 Method 를 호출 ProductRestController
+: URL Prefix : /product/*
+: 상품등록 : /json/addProduct
+: 상품상세조회 : /json/getProduct
+: 상품리스트 조회 : /json/getProductList
+: 상품정보수정 : /json/updatgeProduct
+
+3.1 getxxx 조회시는  경로변수(Path Variable) 방식으로 REST에서 리소스 식별가능하게 RESTful한 스타일 적용
+
+
+4. 자세한 주석 처리
+부분별 용도 설명
+전달 내용 및 방향
+결과
+예제URL 제공
