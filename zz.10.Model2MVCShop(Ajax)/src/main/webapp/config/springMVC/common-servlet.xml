@@ -41,6 +41,7 @@
         
         <mvc:exclude-mapping path="/user/login"/>
         <mvc:exclude-mapping path="/user/kakaoLogin"/>
+        <mvc:exclude-mapping path="/user/googleLogin"/>
         <mvc:exclude-mapping path="/user/logout"/>
         <mvc:exclude-mapping path="/user/addUser"/>
         <mvc:exclude-mapping path="/user/checkDuplication"/>

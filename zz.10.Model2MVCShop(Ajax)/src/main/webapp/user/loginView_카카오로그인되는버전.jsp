@@ -118,19 +118,20 @@
         }
         
      // [변경] 카카오 로그인 팝업을 수동으로 띄우는 함수
+// [변경] 카카오 로그인 팝업을 수동으로 띄우는 함수
 function kakaoLoginPopup() {
     const KAKAO_REST_API_KEY = 'f38379dc4a1fd8db1c81e44d5bf62547'; // 본인의 REST API 키
-    const KAKAO_REDIRECT_URI = 'http://localhost:8080/user/kakaoLogin'; // 콜백 URL
+    
+    // ▼▼▼ [핵심 수정 부분] ▼▼▼
+    // 현재 접속한 주소(origin)를 기반으로 Redirect URI를 동적으로 생성합니다.
+    const KAKAO_REDIRECT_URI = window.location.origin + '/user/kakaoLogin';
 
-    // [수정] 템플릿 리터럴(``) 대신 일반 문자열 합치기(+) 방식으로 변경
     const authUrl = 'https://kauth.kakao.com/oauth/authorize?response_type=code'
                   + '&client_id=' + KAKAO_REST_API_KEY 
                   + '&redirect_uri=' + KAKAO_REDIRECT_URI;
 
-    // 디버깅을 위해 완성된 URL을 콘솔에 출력해봅니다.
-    console.log('Generated Kakao Auth URL:', authUrl);
+    console.log('Generated Kakao Auth URL:', authUrl); // 생성된 URL 확인
     
-    // 팝업창을 띄웁니다.
     window.open(authUrl, 'kakaoLoginPopup', 'width=600,height=700');
 }
 	</script>		

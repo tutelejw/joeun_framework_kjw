@@ -3,9 +3,9 @@
 sqlplus scott/tiger
 
 -- 컬럼별 출력 포맷 지정 (HEADING 없이)
-COLUMN user_id     FORMAT A10
+COLUMN user_id     FORMAT A29
 COLUMN user_name   FORMAT A15
-COLUMN password    FORMAT A10
+COLUMN password    FORMAT A29
 COLUMN role        FORMAT A5
 COLUMN ssn         FORMAT A13
 COLUMN cell_phone  FORMAT A14
@@ -51,7 +51,16 @@ select * from product;
 select * from transaction order by tran_no asc;
 
 
+ALTER TABLE users
+MODIFY (
+  user_id VARCHAR2(29),
+  password VARCHAR2(29)
+);
 
+
+SELECT column_name, data_type, data_length
+FROM user_tab_columns
+WHERE table_name = 'USERS';
 
 
 

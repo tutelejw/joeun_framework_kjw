@@ -337,4 +337,166 @@ public class UserController {
         }
         return null;
     }
+    
+    
+    
+    
+    
+    
+    // ============= [신규] 구글 로그인 콜백 처리 메소드 추가 =============
+    @RequestMapping(value="googleLogin", method=RequestMethod.GET)
+    public String googleLogin(@RequestParam("code") String code, HttpSession session, Model model) throws Exception {
+
+        System.out.println("============== GOOGLE LOGIN START ==============");
+        System.out.println("1. /user/googleLogin GET 요청 받음 (Callback)");
+        System.out.println("2. 인가 코드(Authorization Code) 확인: " + code);
+
+        // 3. 인가 코드를 사용하여 Access Token 요청
+        String accessToken = getGoogleAccessToken(code);
+        if (accessToken == null) {
+            System.out.println("[ERROR] Access Token 받기 실패");
+            model.addAttribute("loginSuccess", false);
+            return "forward:/user/googleCallback.jsp";
+        }
+        System.out.println("3. Access Token 받기 성공: " + accessToken);
+
+        // 4. Access Token으로 구글 사용자 정보 요청
+        Map<String, Object> googleUserInfo = getGoogleUserInfo(accessToken);
+        if (googleUserInfo == null) {
+            System.out.println("[ERROR] 구글 사용자 정보 받기 실패");
+            model.addAttribute("loginSuccess", false);
+            return "forward:/user/googleCallback.jsp";
+        }
+        System.out.println("4. 구글 사용자 정보 받기 성공: " + googleUserInfo);
+
+        // 5. 구글 사용자 정보 기반으로 회원 정보 확인 및 처리
+//        String googleId = (String) googleUserInfo.get("sub");
+        String googleId = (String) googleUserInfo.get("id");
+        String email = (String) googleUserInfo.get("email");
+        String userName = (String) googleUserInfo.get("name");
+        String userId = "g_" + googleId;
+
+        // ▼▼▼ [DEBUG] 구글 인입값 확인 로그 추가 ▼▼▼
+        System.out.println("[DEBUG] Google User Info (sub): " + googleId);
+        System.out.println("[DEBUG] Google User Info (email): " + email);
+        System.out.println("[DEBUG] Google User Info (name): " + userName);
+        System.out.println("[DEBUG] Generated System userId: " + userId);
+        // ▲▲▲ [DEBUG] 로그 추가 끝 ▲▲▲
+
+        User user = userService.getUser(userId);
+
+        // 비회원일 경우 자동 회원가입
+        if (user == null) {
+            System.out.println("5. 비회원 확인. 자동 회원가입을 시작합니다.");
+            user = new User();
+            user.setUserId(userId);
+            user.setUserName(userName);
+            user.setEmail(email);
+            user.setPassword(googleId); // googleId를 임시 비밀번호로 저장
+            user.setRole("user"); // 기본 역할 부여
+
+            // ▼▼▼ [DEBUG] DB 저장 직전 User 객체 상태 확인 로그 추가 ▼▼▼
+            System.out.println("[DEBUG] New User object to be saved: " + user);
+            // ▲▲▲ [DEBUG] 로그 추가 끝 ▲▲▲
+
+            userService.addUser(user);
+            System.out.println("6. 신규 회원가입 완료.");
+        } else {
+            System.out.println("5. 기존 회원 확인: " + user.getUserId());
+        }
+
+        // 7. 세션에 로그인 정보 저장
+        session.setAttribute("user", user);
+        model.addAttribute("loginSuccess", true);
+        model.addAttribute("userId", user.getUserId());
+
+        System.out.println("8. 세션 저장 완료. User ID: " + user.getUserId());
+        System.out.println("============== GOOGLE LOGIN END ==============");
+
+        // 9. 팝업을 제어할 JSP로 포워딩
+        return "forward:/user/googleCallback.jsp";
+    }
+
+    /**
+     * [신규] 인가 코드로 Access Token을 요청하는 헬퍼 메소드
+     */
+	private String getGoogleAccessToken(String code) throws Exception {
+	    // 1. Google Cloud Console에서 발급받은 정보
+	    String clientId = "1095911084251-9vedhnalqe4lhkmpakr4t1h7vqe5ld5e.apps.googleusercontent.com"; // ◀◀◀ 여기에 클라이언트 ID 입력
+	    String clientSecret = "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"; // ◀◀◀ 여기에 클라이언트 보안 비밀 입력
+	    String redirectUri = "http://localhost:8080/user/googleLogin";
+	    String tokenUrl = "https://oauth2.googleapis.com/token";
+
+	    URL url = new URL(tokenUrl);
+	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+	    conn.setRequestMethod("POST");
+	    conn.setDoOutput(true);
+
+        // 2. POST 요청 본문 작성
+        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
+        StringBuilder sb = new StringBuilder();
+        sb.append("code=").append(code);
+        sb.append("&client_id=").append(clientId);
+        sb.append("&client_secret=").append(clientSecret);
+        sb.append("&redirect_uri=").append(redirectUri);
+        sb.append("&grant_type=authorization_code");
+        bw.write(sb.toString());
+        bw.flush();
+
+        // [디버깅] 요청 본문 및 응답 코드 출력
+        System.out.println("[getGoogleAccessToken] Request Body: " + sb.toString());
+        int responseCode = conn.getResponseCode();
+        System.out.println("[getGoogleAccessToken] Response Code: " + responseCode);
+
+	    if (responseCode == 200) {
+	        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+	        String line = "";
+	        StringBuilder result = new StringBuilder();
+	        while ((line = br.readLine()) != null) {
+	            result.append(line);
+	        }
+	        br.close();
+            bw.close();
+
+            // [디버깅] 응답 결과 출력
+            System.out.println("[getGoogleAccessToken] Response Body: " + result.toString());
+
+	        ObjectMapper objectMapper = new ObjectMapper();
+	        Map<String, Object> jsonMap = objectMapper.readValue(result.toString(), new TypeReference<Map<String, Object>>() {});
+	        return (String) jsonMap.get("access_token");
+	    }
+	    return null;
+	}
+
+    /**
+     * [신규] Access Token으로 사용자 정보를 요청하는 헬퍼 메소드
+     */
+	private Map<String, Object> getGoogleUserInfo(String accessToken) throws Exception {
+	    String userInfoUrl = "https://www.googleapis.com/oauth2/v2/userinfo";
+	    URL url = new URL(userInfoUrl);
+	    HttpURLConnection conn = (HttpURLConnection) url.openConnection();
+
+	    conn.setRequestMethod("GET");
+	    conn.setRequestProperty("Authorization", "Bearer " + accessToken);
+
+        int responseCode = conn.getResponseCode();
+        System.out.println("[getGoogleUserInfo] Response Code: " + responseCode);
+
+	    if (responseCode == 200) {
+	        BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
+	        String line = "";
+	        StringBuilder result = new StringBuilder();
+	        while ((line = br.readLine()) != null) {
+	            result.append(line);
+	        }
+	        br.close();
+
+            // [디버깅] 사용자 정보 응답 출력
+            System.out.println("[getGoogleUserInfo] Response Body: " + result.toString());
+
+	        ObjectMapper objectMapper = new ObjectMapper();
+	        return objectMapper.readValue(result.toString(), new TypeReference<Map<String, Object>>() {});
+	    }
+	    return null;
+	}
 }

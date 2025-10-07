@@ -14,9 +14,6 @@
 	<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
     
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js" integrity="sha384-WAtVcQYcmTO/N+C1N+1m6Gp8qxh+3NlnP7X1U7qP6P5dQY/MsRBNTh+e1ahJrkEm" crossorigin="anonymous"></script>
-<!--     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.1/kakao.min.js"
-        integrity="sha384-kDljxUXHaJ9xAb2AzRd59KxjrFjzHa5TAoFQ6GbYTCAG0PqcUX7QXPFqm4i3EuUN" crossorigin="anonymous"></script> -->
-	
     <script type="text/javascript">
         // 페이지 로드 시 카카오 SDK 초기화
         $(function() {
@@ -75,12 +72,15 @@
 			});
 
             // ============= 카카오 로그인 버튼 Event 연결 =============
-/*             $("#kakaoLoginBtn").on("click", function() {
-                kakaoLogin();
-            }); */
 			$("#kakaoLoginBtn").on("click", function() {
 			    kakaoLoginPopup(); // 함수 이름 변경
 			});
+            
+            // ============= [신규] 구글 로그인 버튼 Event 연결 =============
+            $("#googleLoginBtn").on("click", function() {
+                googleLoginPopup();
+            });
+            
 		});
 		
 		
@@ -102,27 +102,58 @@
                 return;
             }
 
-            // ★★★ 디버깅 코드 추가 ★★★
-            // Kakao.Auth 객체를 콘솔에 출력해봅니다.
+            // ★★★ 디버깅 코드 추가 ★★★  // Kakao.Auth 객체를 콘솔에 출력해봅니다.
             console.log('Inspecting Kakao.Auth object:', Kakao.Auth); 
             
             // 에러가 나는 라인
             Kakao.Auth.login({
                 success: function (authObj) {
-                    // ... (기존 success 로직)
                 },
                 fail: function (err) {
-                    // ... (기존 fail 로직)
                 },
             });
         }
         
+        // ============= [신규] 구글 로그인 팝업 처리 함수 =============
+        function googleLoginPopup() {
+            // 1. Google Cloud Console에서 발급받은 클라이언트 ID
+            const GOOGLE_CLIENT_ID = "1095911084251-9vedhnalqe4lhkmpakr4t1h7vqe5ld5e.apps.googleusercontent.com"; // ◀◀◀ 여기에 발급받은 클라이언트 ID를 입력하세요.
+
+            // 2. 서버에 설정된 Redirect URI (절대 경로)
+            const GOOGLE_REDIRECT_URI = "http://localhost:8080/user/googleLogin";
+
+            // 3. 사용자 정보 범위를 지정 (기본: email, profile)
+            const GOOGLE_SCOPE = "https://www.googleapis.com/auth/userinfo.email https://www.googleapis.com/auth/userinfo.profile";
+
+            // 4. OAuth 2.0 인증 URL 생성
+            const authUrl = 'https://accounts.google.com/o/oauth2/v2/auth'
+                        + '?client_id=' + GOOGLE_CLIENT_ID
+                        + '&redirect_uri=' + GOOGLE_REDIRECT_URI
+                        + '&response_type=code'
+                        + '&scope=' + encodeURIComponent(GOOGLE_SCOPE);
+
+            // [디버깅] 생성된 인증 URL을 콘솔에 출력
+            console.log('Generated Google Auth URL:', authUrl);
+
+            // 5. 팝업 창 열기
+            window.open(authUrl, 'googleLoginPopup', 'width=600,height=700');
+        }
+
+        // ============= [신규] 팝업 창에서 호출할 콜백 함수 =============
+        // 이 함수는 팝업(googleCallback.jsp)에서 로그인이 성공했을 때 호출합니다.
+        function googleLoginCallback(userId) {
+            console.log("googleLoginCallback called with userId:", userId);
+            // 부모창(index.jsp)의 프레임들을 새로고침
+            $(window.parent.frames["topFrame"].document.location).attr("href","/layout/top.jsp");
+            $(window.parent.frames["leftFrame"].document.location).attr("href","/layout/left.jsp");
+            $(window.parent.frames["rightFrame"].document.location).attr("href","/user/getUser?userId="+userId);
+        }
+
+
      // [변경] 카카오 로그인 팝업을 수동으로 띄우는 함수
-// [변경] 카카오 로그인 팝업을 수동으로 띄우는 함수
 function kakaoLoginPopup() {
     const KAKAO_REST_API_KEY = 'f38379dc4a1fd8db1c81e44d5bf62547'; // 본인의 REST API 키
     
-    // ▼▼▼ [핵심 수정 부분] ▼▼▼
     // 현재 접속한 주소(origin)를 기반으로 Redirect URI를 동적으로 생성합니다.
     const KAKAO_REDIRECT_URI = window.location.origin + '/user/kakaoLogin';
 
@@ -218,6 +249,12 @@ function kakaoLoginPopup() {
               <tr>
                 <td colspan="4" align="center" style="padding-top:10px;">
                     <img id="kakaoLoginBtn" src="/images/kakao_login_medium_narrow.jpg" style="cursor:pointer;"/>
+                </td>
+              </tr>
+              <tr>
+                <td colspan="4" align="center" style="padding-top:5px;">
+                    <img id="googleLoginBtn" src="/images/btn_google_signin_light_normal_web.png" style="cursor:pointer; height: 45px;"/>
+                    <!-- https://developers.google.com/identity/branding-guidelines -->
                 </td>
               </tr>
             </table>
