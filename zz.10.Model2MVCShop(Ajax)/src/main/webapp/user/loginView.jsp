@@ -243,6 +243,8 @@ function kakaoLoginPopup() {
     const authUrl = 'https://kauth.kakao.com/oauth/authorize?response_type=code'
                   + '&client_id=' + KAKAO_REST_API_KEY 
                   + '&redirect_uri=' + KAKAO_REDIRECT_URI;
+    // 3. CSRF 방지를 위한 state 값 생성 (세션에서 값을 가져오도록 수정)
+    const state = "${sessionScope.state}"; // session에 저장된 값을 JSTL로 가져옵니다.
 
     console.log('Generated Kakao Auth URL:', authUrl); // 생성된 URL 확인
     
@@ -253,11 +255,11 @@ function kakaoLoginPopup() {
 </head>
 
 <body bgcolor="#ffffff" text="#000000" >
-<%
+<%-- <%
     // CSRF 공격 방지를 위한 state 토큰 생성 및 세션에 저장
     String state = new BigInteger(130, new SecureRandom()).toString();
     session.setAttribute("state", state);
-%>
+%> --%>
 <form onsubmit="return false;">
 
 <div align="center" >

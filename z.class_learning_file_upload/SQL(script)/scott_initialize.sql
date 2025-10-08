@@ -53,8 +53,8 @@ select * from transaction order by tran_no asc;
 
 ALTER TABLE users
 MODIFY (
-  user_id VARCHAR2(29),
-  password VARCHAR2(29)
+  user_id VARCHAR2(46),
+  password VARCHAR2(46)
 );
 
 

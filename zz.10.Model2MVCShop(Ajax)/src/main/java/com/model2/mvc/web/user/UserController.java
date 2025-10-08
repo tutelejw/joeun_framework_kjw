@@ -4,9 +4,11 @@ import java.io.BufferedReader;
 import java.io.BufferedWriter;
 import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
+import java.math.BigInteger;
 import java.net.HttpURLConnection;
 import java.net.URL;
 import java.net.URLEncoder;
+import java.security.SecureRandom;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -112,10 +114,17 @@ public class UserController {
 	
 	
 	@RequestMapping( value="login", method=RequestMethod.GET )
-	public String login() throws Exception{
+	public String login(HttpSession session) throws Exception{
 		
 		System.out.println("/user/logon : GET");
+	       // 1. state 값 생성을 컨트롤러로 이동
+        String state = new BigInteger(130, new SecureRandom()).toString();
+        
+        // 2. 생성된 state 값을 세션에 저장
+        session.setAttribute("state", state);
+        System.out.println("  - [CSRF] 세션에 state 값 저장: " + state);
 
+        // 3. 기존과 동일하게 loginView.jsp로 리다이렉트
 		return "redirect:/user/loginView.jsp";
 	}
 	
