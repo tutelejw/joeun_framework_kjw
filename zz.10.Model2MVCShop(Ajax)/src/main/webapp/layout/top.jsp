@@ -13,8 +13,6 @@
 	<script src="http://code.jquery.com/jquery-2.1.4.min.js"></script>
 	
     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.6/kakao.min.js" integrity="sha384-WAtVcQYcmTO/N+C1N+1m6Gp8qxh+3NlnP7X1U7qP6P5dQY/MsRBNTh+e1ahJrkEm" crossorigin="anonymous"></script>
-<!--     <script src="https://t1.kakaocdn.net/kakao_js_sdk/2.7.1/kakao.min.js"
-        integrity="sha384-kDljxUXHaJ9xAb2AzRd59KxjrFjzHa5TAoFQ6GbYTCAG0PqcUX7QXPFqm4i3EuUN" crossorigin="anonymous"></script> -->
 
 	<script type="text/javascript">
 		// 페이지 로드 시 카카오 SDK 초기화

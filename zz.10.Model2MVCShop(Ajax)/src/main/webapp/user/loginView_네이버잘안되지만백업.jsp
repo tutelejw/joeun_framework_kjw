@@ -146,71 +146,30 @@
         }
         
         // ============= [신규] 네이버 로그인 팝업 처리 함수 =============
-function naverLoginPopup() {
-    console.log("[loginView.jsp] naverLoginPopup() 함수 시작");
+        function naverLoginPopup() {
+            // 1. Naver Developer Center에서 발급받은 Client ID
+            const NAVER_CLIENT_ID = "YhvYDqSntCxLVR1hLWdt"; // ◀◀◀ 여기에 발급받은 클라이언트 ID를 입력하세요.
 
-    // 1. 인증 URL 생성
-    const NAVER_CLIENT_ID = "YhvYDqSntCxLVR1hLWdt";
-    const NAVER_REDIRECT_URI = window.location.origin + '/user/naverLogin';
-    const state = "${state}";
-    const authUrl = "https://nid.naver.com/oauth2.0/authorize?response_type=code"
-                + "&client_id=" + NAVER_CLIENT_ID
-                + "&redirect_uri=" + encodeURIComponent(NAVER_REDIRECT_URI)
-                + "&state=" + state;
-    
-    console.log("  - 생성된 인증 URL:", authUrl);
-
-    // 2. 팝업 창 열기
-    const naverPopup = window.open(authUrl, 'naverLoginPopup', 'width=600,height=700');
-    if (naverPopup) {
-        console.log("  - 팝업 창 객체 생성 성공");
-    } else {
-        console.error("  - 팝업 창 생성 실패! (브라우저의 팝업 차단 기능 확인)");
-        alert("팝업이 차단되었습니다. 브라우저 설정을 확인해주세요.");
-        return;
-    }
-
-    // 3. 팝업창이 닫혔는지 0.5초마다 확인하는 타이머 설정
-    console.log("  - 팝업창 감시 타이머 시작 (0.5초 간격)");
-    const timer = setInterval(() => {
-        // naverPopup 객체가 (어떤 이유로든) 사라졌거나, 창이 정상적으로 닫혔는지 확인
-        if (naverPopup == null || naverPopup.closed) {
+            // 2. 동적으로 Redirect URI 생성 (현재 접속한 프로토콜, 호스트, 포트 기준)
+            const NAVER_REDIRECT_URI = window.location.origin + '/user/naverLogin';
             
-            // 타이머가 중복 실행되지 않도록 즉시 중지
-            clearInterval(timer); 
-            
-            console.log("  - [타이머] 팝업 닫힘 감지! 타이머를 중지하고 페이지 새로고침을 시작합니다.");
-            
-            // 4. 부모의 프레임들을 새로고침하여 로그인 상태를 반영
-            try {
-                console.log("    -> topFrame 새로고침 시도...");
-                window.parent.frames["topFrame"].location.reload(true);
-                console.log("    -> topFrame 새로고침 완료.");
+            // 3. CSRF 방지를 위한 state 값 생성 (JSP 상단에서 생성한 값을 사용)
+            const state = "${state}"; // 아래 body 부분에서 JSP 스크립틀릿으로 생성한 값을 가져옵니다.
 
-                console.log("    -> leftFrame 새로고침 시도...");
-                window.parent.frames["leftFrame"].location.reload(true);
-                console.log("    -> leftFrame 새로고침 완료.");
-                
-                // rightFrame은 초기화면(/)으로 이동
-                console.log("    -> rightFrame을 '/'으로 이동 시도...");
-                window.parent.frames["rightFrame"].location.href = "/";
-                console.log("    -> rightFrame 이동 완료.");
+            // 4. OAuth 2.0 인증 URL 생성
+            const authUrl = "https://nid.naver.com/oauth2.0/authorize?response_type=code"
+                        + "&client_id=" + NAVER_CLIENT_ID
+                        + "&redirect_uri=" + encodeURIComponent(NAVER_REDIRECT_URI)
+                        + "&state=" + state;
 
-                console.log("  - 모든 프레임 새로고침 작업이 정상적으로 요청되었습니다.");
+            // [디버깅] 생성된 인증 URL과 Redirect URI, state 값을 콘솔에 출력
+            console.log("네이버 인증 URL:", authUrl);
+            console.log("동적 Redirect URI:", NAVER_REDIRECT_URI);
+            console.log("State 값:", state);
 
-            } catch (e) {
-                console.error("  - 프레임 새로고침 중 오류 발생:", e);
-                // 프레임 구조가 아닐 경우를 대비한 대체 새로고침
-                console.log("  - 프레임 접근 실패. 전체 페이지를 새로고침합니다.");
-                window.location.reload();
-            }
-
-        } else {
-            // 이 로그는 0.5초마다 계속 찍히므로, 팝업이 안 닫히고 있는지 확인할 수 있습니다.
-            console.log("  - [타이머] 팝업창 감시 중... (상태: 열려있음)");
+            // 5. 팝업 창 열기
+            window.open(authUrl, 'naverLoginPopup', 'width=600,height=700');
         }
-    }, 500);
-}
 
         // ============= [신규] 네이버 로그인 팝업 콜백 함수 =============
         // 이 함수는 팝업(naverCallback.jsp)에서 로그인이 성공했을 때 호출합니다.

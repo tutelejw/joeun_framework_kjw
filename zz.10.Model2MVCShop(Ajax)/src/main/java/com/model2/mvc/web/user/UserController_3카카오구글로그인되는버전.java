@@ -6,7 +6,6 @@ import java.io.InputStreamReader;
 import java.io.OutputStreamWriter;
 import java.net.HttpURLConnection;
 import java.net.URL;
-import java.net.URLEncoder;
 import java.util.Map;
 
 import javax.servlet.http.HttpServletRequest;
@@ -31,9 +30,9 @@ import com.model2.mvc.service.user.UserService;
 
 
 //==> 회원관리 Controller
-@Controller
-@RequestMapping("/user/*")
-public class UserController {
+//@Controller
+//@RequestMapping("/user/*")
+public class UserController_3카카오구글로그인되는버전 {
 	
 	///Field
 	@Autowired
@@ -41,7 +40,7 @@ public class UserController {
 	private UserService userService;
 	//setter Method 구현 않음
 		
-	public UserController(){
+	public UserController_3카카오구글로그인되는버전(){
 		System.out.println(this.getClass());
 	}
 	
@@ -500,185 +499,4 @@ public class UserController {
 	    }
 	    return null;
 	}
-	
-	
-    // ============= [신규] 네이버 로그인 콜백 처리 메소드 추가 =============
-    @RequestMapping(value="naverLogin", method=RequestMethod.GET)
-    public String naverLogin(@RequestParam("code") String code, 
-                             @RequestParam("state") String state, 
-                             HttpSession session,
-                             HttpServletRequest request,
-                             Model model) throws Exception {
-
-        System.out.println("\n============== NAVER LOGIN START ==============");
-        System.out.println("1. /user/naverLogin GET 요청 받음 (Callback)");
-
-        // [디버깅] 전달받은 code, state 값 확인
-        System.out.println("   - Authorization Code: " + code);
-        System.out.println("   - State: " + state);
-
-        // [보안] 세션에 저장된 state와 콜백으로 전달받은 state가 일치하는지 확인
-        String sessionState = (String) session.getAttribute("state");
-        System.out.println("   - Session State: " + sessionState);
-        if (sessionState == null || !sessionState.equals(state)) {
-            System.out.println("[ERROR] 세션이 만료되었거나 유효하지 않은 state 값입니다.");
-            model.addAttribute("loginSuccess", false);
-            model.addAttribute("errorMessage", "세션 불일치 오류");
-            return "forward:/user/naverCallback.jsp";
-        }
-        session.removeAttribute("state"); // 사용한 state 값은 즉시 제거
-
-        // 2. 인가 코드를 사용하여 Access Token 요청
-        String accessToken = getNaverAccessToken(code, state, request);
-        if (accessToken == null) {
-            System.out.println("[ERROR] Access Token 받기 실패");
-            model.addAttribute("loginSuccess", false);
-            model.addAttribute("errorMessage", "토큰 발급 실패");
-            return "forward:/user/naverCallback.jsp";
-        }
-        System.out.println("2. Access Token 받기 성공: " + accessToken);
-
-        // 3. Access Token으로 네이버 사용자 정보 요청
-        Map<String, Object> naverUserInfo = getNaverUserInfo(accessToken);
-        if (naverUserInfo == null) {
-            System.out.println("[ERROR] 네이버 사용자 정보 받기 실패");
-            model.addAttribute("loginSuccess", false);
-            model.addAttribute("errorMessage", "사용자 정보 조회 실패");
-            return "forward:/user/naverCallback.jsp";
-        }
-        System.out.println("3. 네이버 사용자 정보 받기 성공: " + naverUserInfo);
-        
-        // 4. 네이버 사용자 정보 기반으로 회원 정보 확인 및 처리
-        Map<String, String> response = (Map<String, String>) naverUserInfo.get("response");
-        String naverId = response.get("id");
-        String email = response.get("email");
-        String userName = response.get("name");
-        String userId = "n_" + naverId; // 기존 회원 ID와 충돌 방지를 위해 'n_' 접두사 추가
-
-        // [디버깅] 네이버에서 받은 사용자 정보 로그
-        System.out.println("   - Naver Unique ID: " + naverId);
-        System.out.println("   - Email: " + email);
-        System.out.println("   - Name: " + userName);
-        System.out.println("   - Generated System userId: " + userId);
-
-        User user = userService.getUser(userId);
-
-        // 5. 비회원일 경우 자동 회원가입
-        if (user == null) {
-            System.out.println("4. 비회원 확인. 자동 회원가입을 시작합니다.");
-            user = new User();
-            user.setUserId(userId);
-            user.setUserName(userName);
-            user.setEmail(email);
-            user.setPassword(naverId); // naverId를 임시 비밀번호로 저장
-            user.setRole("user"); 
-
-            System.out.println("   - DB 저장 직전 User 객체: " + user);
-            userService.addUser(user);
-            System.out.println("5. 신규 회원가입 완료.");
-        } else {
-            System.out.println("4. 기존 회원 확인: " + user.getUserId());
-        }
-
-        // 6. 세션에 로그인 정보 저장
-        session.setAttribute("user", user);
-        model.addAttribute("loginSuccess", true);
-        model.addAttribute("userId", user.getUserId());
-
-        System.out.println("6. 세션 저장 완료. User ID: " + user.getUserId());
-        System.out.println("============== NAVER LOGIN END ==============\n");
-
-        // 7. 팝업을 제어할 JSP로 포워딩
-        return "forward:/user/naverCallback.jsp";
-    }
-
-    /**
-     * [신규] 인가 코드로 Access Token을 요청하는 헬퍼 메소드
-     */
-    private String getNaverAccessToken(String code, String state, HttpServletRequest request) throws Exception {
-        // 1. 네이버 개발자 센터에서 발급받은 정보
-        String clientId = "YhvYDqSntCxLVR1hLWdt"; // ◀◀◀ 여기에 클라이언트 ID 입력
-        String clientSecret = "UfidBKEeEm"; // ◀◀◀ 여기에 클라이언트 시크릿 입력
-
-        // 2. 동적 Redirect URI 생성
-        // 요청받은 URL("http://localhost:8080/user/naverLogin")을 그대로 사용
-        String redirectURI = request.getRequestURL().toString();
-        
-        // 3. 토큰 발급 요청 URL
-        String tokenUrl = "https://nid.naver.com/oauth2.0/token";
-        URL url = new URL(tokenUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-        conn.setRequestMethod("POST");
-        conn.setDoOutput(true);
-
-        // 4. POST 요청 본문 작성
-        BufferedWriter bw = new BufferedWriter(new OutputStreamWriter(conn.getOutputStream()));
-        StringBuilder sb = new StringBuilder();
-        sb.append("grant_type=authorization_code");
-        sb.append("&client_id=").append(clientId);
-        sb.append("&client_secret=").append(clientSecret);
-        sb.append("&redirect_uri=").append(URLEncoder.encode(redirectURI, "UTF-8"));
-        sb.append("&code=").append(code);
-        sb.append("&state=").append(state);
-        bw.write(sb.toString());
-        bw.flush();
-
-        // [디버깅] 토큰 요청 정보 및 응답 코드 출력
-        System.out.println("\n   [getNaverAccessToken] >> Request URL: " + tokenUrl);
-        System.out.println("   [getNaverAccessToken] >> Request Body: " + sb.toString());
-        int responseCode = conn.getResponseCode();
-        System.out.println("   [getNaverAccessToken] >> Response Code: " + responseCode);
-
-        if (responseCode == 200) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line = "";
-            StringBuilder result = new StringBuilder();
-            while ((line = br.readLine()) != null) {
-                result.append(line);
-            }
-            br.close();
-            bw.close();
-
-            // [디버깅] 토큰 응답 결과 출력
-            System.out.println("   [getNaverAccessToken] >> Response Body: " + result.toString() + "\n");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            Map<String, Object> jsonMap = objectMapper.readValue(result.toString(), new TypeReference<Map<String, Object>>() {});
-            return (String) jsonMap.get("access_token");
-        }
-        return null;
-    }
-
-    /**
-     * [신규] Access Token으로 사용자 정보를 요청하는 헬퍼 메소드
-     */
-    private Map<String, Object> getNaverUserInfo(String accessToken) throws Exception {
-        String userInfoUrl = "https://openapi.naver.com/v1/nid/me";
-        URL url = new URL(userInfoUrl);
-        HttpURLConnection conn = (HttpURLConnection) url.openConnection();
-
-        conn.setRequestMethod("GET");
-        conn.setRequestProperty("Authorization", "Bearer " + accessToken);
-
-        int responseCode = conn.getResponseCode();
-        System.out.println("\n   [getNaverUserInfo] >> Request URL: " + userInfoUrl);
-        System.out.println("   [getNaverUserInfo] >> Response Code: " + responseCode);
-
-        if (responseCode == 200) {
-            BufferedReader br = new BufferedReader(new InputStreamReader(conn.getInputStream()));
-            String line = "";
-            StringBuilder result = new StringBuilder();
-            while ((line = br.readLine()) != null) {
-                result.append(line);
-            }
-            br.close();
-
-            // [디버깅] 사용자 정보 응답 출력
-            System.out.println("   [getNaverUserInfo] >> Response Body: " + result.toString() + "\n");
-
-            ObjectMapper objectMapper = new ObjectMapper();
-            return objectMapper.readValue(result.toString(), new TypeReference<Map<String, Object>>() {});
-        }
-        return null;
-    }
 }
