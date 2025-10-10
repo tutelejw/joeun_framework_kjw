@@ -1,8 +1,8 @@
 package com.model2.mvc.web.user;
 
 import java.net.URI;
-import java.net.http.*;
-import java.net.http.HttpRequest.BodyPublishers;
+//import java.net.http.*;
+//import java.net.http.HttpRequest.BodyPublishers;
 import java.time.Duration;
 import java.util.Map;
 
@@ -27,12 +27,12 @@ import com.model2.mvc.common.Search;
 import com.model2.mvc.service.domain.User;
 import com.model2.mvc.service.user.UserService;
 
-import com.kakao.auth.KakaoSDK;
-import com.kakao.auth.ISessionCallback;
-import com.kakao.auth.Session;
-import com.kakao.usermgmt.UserManagement;
-import com.kakao.usermgmt.callback.UserProfileCallback;
-import com.kakao.usermgmt.response.model.UserProfile;
+//import com.kakao.auth.KakaoSDK;
+//import com.kakao.auth.ISessionCallback;
+//import com.kakao.auth.Session;
+//import com.kakao.usermgmt.UserManagement;
+//import com.kakao.usermgmt.callback.UserProfileCallback;
+//import com.kakao.usermgmt.response.model.UserProfile;
 
 //==> 회원관리 Controller
 @Controller
@@ -187,62 +187,62 @@ public class UserController {
 		return "forward:/user/listUser.jsp";
 	}
 	
-	@GetMapping("/kakaoLogin")
-	public String kakaoLogin(@RequestParam("code") String code, HttpSession session) throws Exception {
-	    // 1. Access Token 요청
-	    String accessToken = getKakaoAccessToken(code);
+//	@GetMapping("/kakaoLogin")
+//	public String kakaoLogin(@RequestParam("code") String code, HttpSession session) throws Exception {
+//	    // 1. Access Token 요청
+//	    String accessToken = getKakaoAccessToken(code);
+//
+//	    // 2. 사용자 정보 요청
+//	    Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
+//
+//	    String kakaoId = String.valueOf(kakaoUserInfo.get("id"));
+//	    String nickname = ((Map)((Map)kakaoUserInfo.get("kakao_account")).get("profile")).get("nickname").toString();
+//
+//	    // 3. DB 사용자 확인 (없으면 자동 가입 처리)
+//	    User user = userService.getUser(kakaoId);
+//	    if (user == null) {
+//	        user = new User();
+//	        user.setUserId(kakaoId);
+//	        user.setUserName(nickname);
+//	        user.setPassword("kakao"); // 더미 비밀번호
+//	        userService.addUser(user);
+//	    }
+//
+//	    // 4. 로그인 처리
+//	    session.setAttribute("user", user);
+//
+//	    return "redirect:/index.jsp";
+//	}
 
-	    // 2. 사용자 정보 요청
-	    Map<String, Object> kakaoUserInfo = getKakaoUserInfo(accessToken);
-
-	    String kakaoId = String.valueOf(kakaoUserInfo.get("id"));
-	    String nickname = ((Map)((Map)kakaoUserInfo.get("kakao_account")).get("profile")).get("nickname").toString();
-
-	    // 3. DB 사용자 확인 (없으면 자동 가입 처리)
-	    User user = userService.getUser(kakaoId);
-	    if (user == null) {
-	        user = new User();
-	        user.setUserId(kakaoId);
-	        user.setUserName(nickname);
-	        user.setPassword("kakao"); // 더미 비밀번호
-	        userService.addUser(user);
-	    }
-
-	    // 4. 로그인 처리
-	    session.setAttribute("user", user);
-
-	    return "redirect:/index.jsp";
-	}
-
-	private String getKakaoAccessToken(String code) throws Exception {
-	    String requestUrl = "https://kauth.kakao.com/oauth/token";
-
-	    // 요청 파라미터 설정
-	    String form = "grant_type=authorization_code"
-	                + "&client_id=f38379dc4a1fd8db1c81e44d5bf62547"
-	                + "&redirect_uri=http://localhost:8080/user/kakaoLogin"
-	                + "&code=" + code;
-
-	    // HttpClient 생성
-	    HttpClient client = HttpClient.newHttpClient();
-
-	    // HttpRequest 생성
-	    HttpRequest request = HttpRequest.newBuilder()
-	            .uri(URI.create(requestUrl))
-	            .timeout(Duration.ofSeconds(10))
-	            .header("Content-Type", "application/x-www-form-urlencoded")
-	            .POST(BodyPublishers.ofString(form))
-	            .build();
-
-	    // 응답 처리
-	    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
-
-	    // JSON 파싱
-	    ObjectMapper objectMapper = new ObjectMapper();
-	    Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
-
-	    return responseMap.get("access_token").toString();
-	}
+//	private String getKakaoAccessToken(String code) throws Exception {
+//	    String requestUrl = "https://kauth.kakao.com/oauth/token";
+//
+//	    // 요청 파라미터 설정
+//	    String form = "grant_type=authorization_code"
+//	                + "&client_id=f38379dc4a1fd8db1c81e44d5bf62547"
+//	                + "&redirect_uri=http://localhost:8080/user/kakaoLogin"
+//	                + "&code=" + code;
+//
+////	    // HttpClient 생성
+////	    HttpClient client = HttpClient.newHttpClient();
+////
+////	    // HttpRequest 생성
+////	    HttpRequest request = HttpRequest.newBuilder()
+////	            .uri(URI.create(requestUrl))
+////	            .timeout(Duration.ofSeconds(10))
+////	            .header("Content-Type", "application/x-www-form-urlencoded")
+////	            .POST(BodyPublishers.ofString(form))
+////	            .build();
+////
+////	    // 응답 처리
+////	    HttpResponse<String> response = client.send(request, HttpResponse.BodyHandlers.ofString());
+//
+//	    // JSON 파싱
+//	    ObjectMapper objectMapper = new ObjectMapper();
+//	    Map<String, Object> responseMap = objectMapper.readValue(response.body(), Map.class);
+//
+//	    return responseMap.get("access_token").toString();
+//	}
 
 
 
