@@ -1,0 +1,14 @@
+JSP + jQuery 환경에 맞춰 jQuery UI의 Autocomplete 방식으로 적용
+검색창에 회원 ID 또는 이름, 상품명,상품코드 입력하면 자동으로 일치하는 목록이 표시되도록 함
+사용자 혹은 상품 선택 시 해당 값으로 검색 가능하게 적용
+검색 조건(회원ID/회원명)에 따라 autocomplete source를 다르게 설정 적용
+minLength는 서버 부담을 줄이기 위해 꼭 설정 (2)
+limit 10 등으로 응답 양을 제한
+Restful + JSON 방식으로 구현(jQuery의 $.ajax() + Spring Controller @RestController or @ResponseBody + JSON 응답 조합)
+구성에 따라 컨트롤러와 DAO, mybatis 수정사항 제시
+
+제공 소스
+검색페이지 listProduct.jsp
+컨트롤러  java
+DAO 및 mybatis 
+서비스 추가 여부 확인

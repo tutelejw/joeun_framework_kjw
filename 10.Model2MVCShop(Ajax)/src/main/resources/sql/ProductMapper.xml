@@ -1,0 +1,143 @@
+<?xml version="1.0" encoding="UTF-8" ?>
+<!DOCTYPE mapper
+  PUBLIC "-//mybatis.org//DTD Mapper 3.0//EN"
+  "http://mybatis.org/dtd/mybatis-3-mapper.dtd">
+
+<mapper namespace="ProductMapper">
+<!-- <mapper namespace="UserMapper"> -->
+<!-- <mapper namespace="com.model2.mvc.service.product.ProductDao"> -->
+
+  <!-- ResultMap for Product -->
+  <resultMap id="productResultMap" type="com.model2.mvc.service.domain.Product">
+    <id property="prodNo" column="PROD_NO" jdbcType="INTEGER"/>
+    <result property="prodName" column="PROD_NAME" jdbcType="VARCHAR"/>
+    <result property="prodDetail" column="PROD_DETAIL" jdbcType="VARCHAR"/>
+    <result property="manuDate" column="MANUFACTURE_DAY" jdbcType="VARCHAR"/>
+    <result property="price" column="PRICE" jdbcType="INTEGER"/>
+    <result property="fileName" column="IMAGE_FILE" jdbcType="VARCHAR"/>
+    <result property="regDate" column="REG_DATE" jdbcType="DATE"/>
+    <result property="proTranCode" column="TRAN_STATUS_TEXT" jdbcType="VARCHAR"/>
+  </resultMap>
+
+
+
+  <!-- Insert Product -->
+  <insert id="addProduct" parameterType="product">
+<!--   <insert id="addProduct" parameterType="com.model2.mvc.service.domain.Product"> -->
+    INSERT INTO PRODUCT (
+      PROD_NO, IMAGE_FILE, MANUFACTURE_DAY, PRICE, PROD_DETAIL, PROD_NAME, REG_DATE
+    )
+    VALUES (
+      seq_product_prod_no.NEXTVAL,
+      #{fileName, jdbcType=VARCHAR},
+      #{manuDate, jdbcType=VARCHAR},
+      #{price, jdbcType=INTEGER},
+      #{prodDetail, jdbcType=VARCHAR},
+      #{prodName, jdbcType=VARCHAR},
+      SYSDATE
+    )
+  </insert>
+
+  <!-- Find Product -->
+  <select id="findProduct" parameterType="String" resultMap="productResultMap">
+    SELECT
+      P.PROD_NO, P.PROD_NAME, P.PROD_DETAIL, P.MANUFACTURE_DAY,
+      P.PRICE, P.IMAGE_FILE, P.REG_DATE,
+      CASE
+        WHEN T.PROD_NO IS NOT NULL THEN '재고없음'
+        ELSE '판매중'
+      END AS TRAN_STATUS_TEXT
+    FROM PRODUCT P
+    LEFT JOIN TRANSACTION T ON P.PROD_NO = T.PROD_NO
+    WHERE P.PROD_NO = #{value, jdbcType=VARCHAR}
+  </select>
+  
+  <!-- 오토컴플릿 -->
+<select id="getProductNameList" parameterType="string" resultType="string">
+  SELECT prod_name
+  FROM (
+      SELECT prod_name
+      FROM product
+      WHERE prod_name LIKE '%' || #{value} || '%'
+      ORDER BY prod_name
+  )
+  WHERE ROWNUM &lt;= 10
+</select>
+
+
+  <!-- Get Total Count -->
+  <select id="getTotalCount" parameterType="com.model2.mvc.common.Search" resultType="int">
+    SELECT COUNT(*)
+    FROM PRODUCT P
+    LEFT JOIN TRANSACTION T ON P.PROD_NO = T.PROD_NO
+    <where>
+      <if test="searchCondition != null and searchKeyword != null and searchKeyword != ''">
+<choose>
+  <when test="searchCondition == 0">
+    AND TO_CHAR(P.PROD_NO) LIKE '%' || #{searchKeyword} || '%'
+  </when>
+  <when test="searchCondition == 1">
+    AND P.PROD_NAME LIKE '%' || #{searchKeyword} || '%'
+  </when>
+  <when test="searchCondition == 2">
+    AND TO_CHAR(P.PRICE) LIKE '%' || #{searchKeyword} || '%'
+  </when>
+</choose>
+      </if>
+    </where>
+  </select>
+	 <!-- SQL : SELECT ONE -->
+	 <select 	id="getProduct" parameterType="product"	resultMap="productResultMap">
+		SELECT
+		prod_no ,prod_name, prod_detail, manufacture_day, price,image_file, reg_date		
+		FROM product 
+		WHERE prod_no = #{value}
+	 </select>
+  <!-- Get Product List (페이징 포함) -->
+  <select id="getProductList" parameterType="com.model2.mvc.common.Search" resultMap="productResultMap">
+    SELECT * FROM (
+      SELECT ROWNUM AS RNUM, A.* FROM (
+        SELECT
+          P.PROD_NO, P.PROD_NAME, P.PROD_DETAIL, P.MANUFACTURE_DAY,
+          P.PRICE, P.IMAGE_FILE, P.REG_DATE,
+          CASE
+            WHEN T.PROD_NO IS NOT NULL THEN '재고없음'
+            ELSE '판매중'
+          END AS TRAN_STATUS_TEXT
+        FROM PRODUCT P
+        LEFT JOIN TRANSACTION T ON P.PROD_NO = T.PROD_NO
+        <where>
+          <if test="searchCondition != null and searchKeyword != null and searchKeyword != ''">
+<choose>
+  <when test="searchCondition == 0">
+    AND TO_CHAR(P.PROD_NO) LIKE '%' || #{searchKeyword} || '%'
+  </when>
+  <when test="searchCondition == 1">
+    AND P.PROD_NAME LIKE '%' || #{searchKeyword} || '%'
+  </when>
+  <when test="searchCondition == 2">
+    AND TO_CHAR(P.PRICE)  LIKE '%' || #{searchKeyword} || '%'
+  </when>
+</choose>
+          </if>
+        </where>
+        ORDER BY P.PROD_NO DESC
+      ) A
+      WHERE ROWNUM &lt;= #{endRowNum, jdbcType=INTEGER}
+    )
+    WHERE RNUM &gt;= #{startRowNum, jdbcType=INTEGER}
+  </select>
+
+  <!-- Update Product -->
+  <update id="updateProduct" parameterType="com.model2.mvc.service.domain.Product">
+    UPDATE PRODUCT
+    SET
+      PROD_NAME = #{prodName, jdbcType=VARCHAR},
+      PROD_DETAIL = #{prodDetail, jdbcType=VARCHAR},
+      MANUFACTURE_DAY = #{manuDate, jdbcType=VARCHAR},
+      PRICE = #{price, jdbcType=INTEGER},
+      IMAGE_FILE = #{fileName, jdbcType=VARCHAR}
+    WHERE PROD_NO = #{prodNo, jdbcType=INTEGER}
+  </update>
+
+</mapper>
