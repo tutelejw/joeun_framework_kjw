@@ -25,4 +25,7 @@ public interface ProductDao {
 	// 게시판 Page 처리를 위한 전체Row(totalCount)  return
 	public int getTotalCount(Search search) throws Exception ;
 	
+	// [추가] 자동완성용 상품명 목록 조회
+    public List<String> getProductNameList(String keyword) throws Exception;
+	
 }

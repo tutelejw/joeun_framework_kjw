@@ -51,4 +51,10 @@ public class ProductDaoImpl implements ProductDao{
 	public int getTotalCount(Search search) throws Exception {
 		return sqlSession.selectOne("ProductMapper.getTotalCount", search);
 	}
+	
+	// 오토컴플릿 getProductNameList 메서드 구현 ▼▼▼ //
+	@Override
+	public List<String> getProductNameList(String keyword) throws Exception {
+		return sqlSession.selectList("ProductMapper.getProductNameList", keyword);
+	}
 }

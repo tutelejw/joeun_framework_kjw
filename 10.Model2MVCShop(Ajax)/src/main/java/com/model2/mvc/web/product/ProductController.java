@@ -15,6 +15,7 @@ import org.springframework.web.bind.annotation.ModelAttribute;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RequestMethod;
 import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.ResponseBody;
 
 import com.model2.mvc.common.Page;
 import com.model2.mvc.common.Search;
@@ -181,50 +182,33 @@ public class ProductController {
 	}
 
 	
-	  @RequestMapping(value = "listProductScroll", method = RequestMethod.GET)
+//	  @RequestMapping(value = "listProductScroll", method = RequestMethod.GET)
+	  @RequestMapping(value = "listProductScroll", method = {RequestMethod.GET, RequestMethod.POST})
 	  public String listProductScroll(@ModelAttribute("search") Search search,
-	  Model model, HttpServletRequest request) throws Exception {
-	  System.out.println("/product/listProductScroll : GET");
+			  							Model model, 
+			  							HttpServletRequest request) throws Exception {
+	  System.out.println("/product/listProductScroll : GET/POST");
 	  
-	  // 요청받은 현재 페이지가 0이면 1로 설정 
+	  // 1. 페이지 초기화 요청받은 현재 페이지가 0이면 1로 설정 
 	  if (search.getCurrentPage() == 0) {
 	  search.setCurrentPage(1); }
 	  
 	  search.setPageSize(pageSize);
 	  
-	  // Business logic 수행 (상품 목록과 총 카운트 가져오기) 
+	  // 2. 비즈니스 로직 호출: 상품 리스트 + 전체 상품 수 반환
 	  Map<String, Object> map =	  productService.getProductList(search);
 	  
-	  // 페이지 정보 계산 
-	  Page resultPage = new Page(search.getCurrentPage(), ((Integer)
-	  map.get("totalCount")).intValue(), pageUnit, pageSize);
+	    // 3. 페이지 정보 계산 객체 생성
+	  Page resultPage = new Page(search.getCurrentPage(),((Integer) map.get("totalCount")).intValue(), pageUnit, pageSize);
 	  System.out.println(resultPage);
 	  
-	  // Model에 상품 목록과 페이지 정보를 추가 
-	  model.addAttribute("list", map.get("list"));
-	  model.addAttribute("resultPage", resultPage); model.addAttribute("search",
-	  search);
+	  // 4. 모델에 데이터 담기Model에 상품 목록과 페이지 정보를 추가 
+	    model.addAttribute("list", map.get("list"));           // 상품 리스트
+	    model.addAttribute("resultPage", resultPage);          // 페이징 정보
+	    model.addAttribute("search", search);                  // 검색 조건 유지
 	  
-	  // Ajax 요청에 대해서 HTML 형태로 반환 (이 부분이 중요) 
-	  return  "/product/listProductScroll.jsp"; // AJAX로 추가된 데이터를 렌더링할 JSP 파일 }
+	  return "forward:/product/listProductScroll.jsp";  
 	  }
 
-	/*
-	 * @RequestMapping(value = "listProductScroll", method = RequestMethod.POST)
-	 * public String listProductScroll(@ModelAttribute("search") Search search,
-	 * Model model) throws Exception { if(search.getCurrentPage() == 0){
-	 * search.setCurrentPage(1); } int pageSize = 10; // 페이지당 항목 수 (컨트롤러 내 일치시킴)
-	 * search.setPageSize(pageSize);
-	 * 
-	 * Map<String, Object> map = productService.getProductList(search); int
-	 * totalCount = (Integer) map.get("totalCount");
-	 * 
-	 * Page resultPage = new Page(search.getCurrentPage(), totalCount, 10,
-	 * pageSize); model.addAttribute("list", map.get("list"));
-	 * model.addAttribute("resultPage", resultPage);
-	 * 
-	 * return "forward:/product/listProductScroll.jsp"; // Ajax 로불러올 JSP 경로
-	 * (/WEB-INF/views/product/listProductScroll.jsp) }
-	 */
 
 }

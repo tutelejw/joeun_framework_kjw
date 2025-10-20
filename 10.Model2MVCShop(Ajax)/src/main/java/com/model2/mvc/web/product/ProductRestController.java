@@ -1,5 +1,6 @@
 package com.model2.mvc.web.product;
 
+import java.util.List;
 import java.util.Map;
 
 import org.springframework.beans.factory.annotation.Autowired;
@@ -114,6 +115,24 @@ public class ProductRestController {
         }
 
         return productService.getProductList(search);
+    }
+	// [추가] Autocomplete 요청을 처리하고 JSON 데이터를 반환하는 메서드
+    /**
+     * 상품명 자동완성 목록을 JSON으로 반환합니다.
+     * @param term jQuery UI Autocomplete가 보내는 검색어 파라미터
+     * @return 상품명 List
+     * @throws Exception
+     */
+ // @RequestMapping(value="getProductNameList", method=RequestMethod.GET) 대신 @GetMapping 사용 가능
+    @GetMapping("json/getProductNameList") 
+    public List<String> getProductNameList(@RequestParam("term") String term) throws Exception {
+        
+        System.out.println("/product/json/getProductNameList : GET");
+        System.out.println("자동완성 검색어: " + term);
+        
+        // @RestController 클래스에 있으므로 @ResponseBody 어노테이션이 없어도
+        // List<String>이 자동으로 JSON 배열로 변환되어 반환됩니다.
+        return productService.getProductNameList(term);
     }
     
 }

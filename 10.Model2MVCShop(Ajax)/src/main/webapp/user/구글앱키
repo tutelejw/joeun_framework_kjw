@@ -1,0 +1,87 @@
+
+
+OAuth 클라이언트 생성됨
+Google 인증 플랫폼의 클라이언트 탭에서 언제든지 클라이언트 ID에 액세스할 수 있습니다.
+
+OAuth 액세스는 OAuth 동의 화면에 나열된 테스트 사용자 로 제한됩니다.
+OAuth 2.0 클라이언트 이름 : 웹 클라이언트 1 
+클라이언트 ID  : 1095911084251-9vedhnalqe4lhkmpakr4t1h7vqe5ld5e.apps.googleusercontent.com
+
+2025년 6월부터는 이 대화상자를 닫으면 더 이상 클라이언트 보안 비밀번호를 보거나 다운로드할 수 없습니다. 아래 정보를 복사하거나 다운로드하여 안전하게 보관해야 합니다.
+클라이언트 보안 비밀번호    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
+생성일    2025년 10월 8일 AM 12시 22분 31초 GMT+9
+상태      사용 설정됨
+
+
+
+
+{"web":{"client_id":"1095911084251-9vedhnalqe4lhkmpakr4t1h7vqe5ld5e.apps.googleusercontent.com","project_id":"kimkim-474415","auth_uri":"https://accounts.google.com/o/oauth2/auth","token_uri":"https://oauth2.googleapis.com/token","auth_provider_x509_cert_url":"https://www.googleapis.com/oauth2/v1/certs","client_secret":"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","redirect_uris":["http://localhost:8080/user/googleLogin","http://127.0.0.1:8080/user/googleLogin"],"javascript_origins":["http://localhost:8080","http://127.0.0.1:8080"]}}
+
+
+
+
+
+sqlplus scott/tiger
+
+-- 컬럼별 출력 포맷 지정 (HEADING 없이)
+COLUMN user_id     FORMAT A29
+COLUMN user_name   FORMAT A15
+COLUMN password    FORMAT A29
+COLUMN role        FORMAT A5
+COLUMN ssn         FORMAT A13
+COLUMN cell_phone  FORMAT A14
+COLUMN addr        FORMAT A20
+COLUMN email       FORMAT A15
+COLUMN reg_date    FORMAT A19
+
+-- 날짜 형식 지정
+-- ALTER SESSION SET NLS_DATE_FORMAT = 'YYYY-MM-DD HH24:MI:SS';
+
+
+-- 보기 좋게 컬럼 형식 지정
+
+
+COLUMN tran_no        FORMAT 999999;
+COLUMN buyer_id       FORMAT A15;
+COLUMN demailaddr     FORMAT A30;
+COLUMN receiver_name  FORMAT A12;
+COLUMN dlvy_request   FORMAT A15;
+COLUMN DEMAILADDR   FORMAT A12;
+COLUMN BUYER_ID   FORMAT A12;
+COLUMN RECEIVER_PHONE   FORMAT A14;
+-- 컬럼 포맷 설정
+COLUMN prod_no        FORMAT 999999   
+COLUMN prod_name      FORMAT A20      
+COLUMN prod_detail    FORMAT A20      
+COLUMN manufacture_day FORMAT A12     
+COLUMN price          FORMAT 9,999,999 
+COLUMN image_file     FORMAT A10       
+COLUMN reg_date       FORMAT A15       
+
+-- auto commit 설정
+SHOW AUTOCOMMIT;
+SET AUTOCOMMIT ON;
+SHOW AUTOCOMMIT;
+
+-- 줄 길이와 페이지 길이 설정
+SET LINESIZE 1000;
+SET PAGESIZE 1000;
+
+select * from users;
+select * from product;
+select * from transaction order by tran_no asc;
+
+
+ALTER TABLE users
+MODIFY (
+  user_id VARCHAR2(29),
+  password VARCHAR2(29)
+);
+
+
+SELECT column_name, data_type, data_length
+FROM user_tab_columns
+WHERE table_name = 'USERS';
+
+
+select * from users;

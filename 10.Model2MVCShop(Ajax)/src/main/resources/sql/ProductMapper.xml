@@ -19,6 +19,8 @@
     <result property="proTranCode" column="TRAN_STATUS_TEXT" jdbcType="VARCHAR"/>
   </resultMap>
 
+
+
   <!-- Insert Product -->
   <insert id="addProduct" parameterType="product">
 <!--   <insert id="addProduct" parameterType="com.model2.mvc.service.domain.Product"> -->
@@ -49,6 +51,19 @@
     LEFT JOIN TRANSACTION T ON P.PROD_NO = T.PROD_NO
     WHERE P.PROD_NO = #{value, jdbcType=VARCHAR}
   </select>
+  
+  <!-- 오토컴플릿 -->
+<select id="getProductNameList" parameterType="string" resultType="string">
+  SELECT prod_name
+  FROM (
+      SELECT prod_name
+      FROM product
+      WHERE prod_name LIKE '%' || #{value} || '%'
+      ORDER BY prod_name
+  )
+  WHERE ROWNUM &lt;= 10
+</select>
+
 
   <!-- Get Total Count -->
   <select id="getTotalCount" parameterType="com.model2.mvc.common.Search" resultType="int">

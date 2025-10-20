@@ -1,181 +1,281 @@
 <%@ page contentType="text/html; charset=UTF-8" %>
 <%@ taglib prefix="c" uri="http://java.sun.com/jsp/jstl/core" %>
+<%-- 로그 찍기: JSTL core 태그를 이용한 디버깅 --%>
+<c:if test="${!empty list}">
+    <div style="color:red;">[디버깅] list 에 데이터가 정상 있습니다.</div>
+</c:if>
+<c:if test="${empty list}">
+    <div style="color:red;">[디버깅] list가 비어 있습니다.</div>
+</c:if>
+<c:if test="${empty resultPage}">
+    <div style="color:red;">[디버깅] resultPage가 비어 있습니다.</div>
+</c:if>
+<c:if test="${empty search}">
+    <div style="color:red;">[디버깅] search가 비어 있습니다.</div>
+</c:if>
+<%-- /////////////////////// EL / JSTL 적용으로 주석 처리 ////////////////////////
+
+<%@ page import="java.util.List"  %>
+
+<%@ page import="com.model2.mvc.service.domain.Product" %>
+<%@ page import="com.model2.mvc.common.Search" %>
+<%@page import="com.model2.mvc.common.Page"%>
+<%@page import="com.model2.mvc.common.util.CommonUtil"%>
+
+<%
+	List<Product> list= (List<Product>)request.getAttribute("list");
+	Page resultPage=(Page)request.getAttribute("resultPage");
+	
+	Search search = (Search)request.getAttribute("search");
+	//==> null 을 ""(nullString)으로 변경
+	String searchCondition = CommonUtil.null2str(search.getSearchCondition());
+	String searchKeyword = CommonUtil.null2str(search.getSearchKeyword());
+%> 	/////////////////////// EL / JSTL 적용으로 주석 처리 //////////////////////// --%>
+<%
+String uri = request.getRequestURI();
+String url = request.getRequestURL().toString();
+String query = request.getQueryString();
+String method = request.getMethod();
+
+System.out.println("[로그] 요청 URI: " + uri);
+System.out.println("[로그] 전체 URL: " + url);
+System.out.println("[로그] 쿼리스트링: " + query);
+System.out.println("[로그] 요청 방식: " + method);
+%>
 
 <html>
 <head>
-  <c:set var="menuParam" value="${param.menu}" />
-  <c:set var="title" value="상품 목록 조회" />
-  <c:if test="${menuParam eq 'manage'}">
+<c:set var="menuParam" value="${param.menu}" />
+<c:set var="title" value="상품 목록 조회" />
+
+<c:if test="${menuParam eq 'manage'}">
     <c:set var="title" value="상품관리" />
-  </c:if>
-
-  <title>${title}</title>
-  <link rel="stylesheet" href="/css/admin.css" type="text/css" />
-  <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
-
-  <style type="text/css">
-  /* AJAX로 동적으로 삽입되는 상세 정보의 줄 바꿈을 방지 */
-  .detail-content {
-      white-space: nowrap; /* 줄 바꿈 방지 */
-      overflow: hidden;    /* 내용이 셀을 넘어갈 경우 숨김 */
-      text-overflow: ellipsis; /* 숨길 경우 ...으로 표시 */
-  }
-  </style>
-
-  <script type="text/javascript">
-    // JSP 변수 menuParam을 JS 변수로 전달
-    var menuParam = '${menuParam}';
-
-    $(document).ready(function () {
-
-      // 1. 상품명 빨간색으로 스타일 적용
-      $(".product-link").css("color", "red");
-
-      // 2. 상품명 클릭 이벤트
-      $(document).on('click', '.product-link', function () {
-        const prodNo = $(this).data('prodno');  // 상품번호
-        const prodName = $(this).text().trim(); // 상품명
-
-        if (!prodNo) {
-          alert("상품번호 정보가 없습니다!");
-          return;
-        }
-
-        // 3. 클릭된 상품 상세 정보가 이미 열려 있는지 확인
-        var $currentDetailRow = $("#" + prodNo + "-detail");  // 해당 상품번호에 대한 상세 정보 영역 (<tr>)
-        
-        // **수정된 부분:** currentDetail.is(":visible") 대신 $currentDetailRow.is(":visible") 사용
-        if ($currentDetailRow.is(":visible")) {
-          // 이미 열려 있으면, 상세 정보 숨기기
-          $currentDetailRow.hide();
-        } else {
-          // 4. AJAX 요청으로 상품 상세 정보 받아오기
-          $.ajax({
-            url: "/product/json/getProduct/" + prodNo,  // 상품 번호로 상세 정보 요청
-            method: "GET",
-            dataType: "json",
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json"
-            },
-            success: function (JSONData) {
-              // 5. 받은 데이터를 HTML로 동적으로 삽입
-              if (JSONData) {
-                
-                // 줄 바꿈 <br/> 제거하고 | 구분자를 사용하여 한 줄로 표시
-                var detailText = "상품명: " + JSONData.prodName + "<br/>" 
-                    + "  가격 : " + JSONData.price  + "<br/>"
-                    + "  상태 : " + JSONData.proTranCode  + "<br/>"
-                    + "  등록일 : " + JSONData.regDateString + "<br/>";
-
-                // 줄 바꿈 방지를 위해 detail-content 클래스를 가진 <div>로 감쌉니다.
-                var displayValue = '<div class="detail-content">' + detailText + '</div>';
+</c:if>
 
 
-                // 6. 모든 다른 상세 정보를 숨김 (열려있는 다른 상세 정보들을 닫음)
-                $(".product-detail").hide();
+<title>${title}</title>
 
-                // 7. 해당 상품에 대한 상세 정보 표시
-                // **수정된 부분:** <tr>과 <td>의 처리를 명확히 분리
-                var $detailRowToOpen = $("#" + prodNo +"-detail");
-                
-                // <tr> 내부의 <td>에 HTML 삽입
-                $detailRowToOpen.find("td").html(displayValue);
-                
-                // <tr> 요소 자체를 보이게 처리
-                $detailRowToOpen.show();
-                
-              } else {
-                alert("상품 정보를 불러오는 데 실패했습니다.");
-              }
-            },
-            error: function () {
-              alert("서버에서 상품 정보를 불러오는 데 오류가 발생했습니다.");
-            }
-          });
-        }
-      });
+<link rel="stylesheet" href="/css/admin.css" type="text/css">
+<link rel="stylesheet" href="//code.jquery.com/ui/1.13.2/themes/base/jquery-ui.css">
+<script src="https://code.jquery.com/jquery-3.6.0.js"></script>
+<script src="https://code.jquery.com/ui/1.13.2/jquery-ui.js"></script>
 
-      // 8. 검색 버튼 클릭 이벤트
-      $('#btnSearch').on('click', function () {
-        $('input[name="currentPage"]').val('1');
-        $('form[name="detailForm"]').submit();
-      });
-
-    });
-    
+<script type="text/javascript">
 	// 검색 / page 두가지 경우 모두 Form 전송을 위해 JavaScrpt 이용  
+	//function fncGetProductList(currentPage) {
 	function fncGetUserList(currentPage) {
-		$("#currentPage").val(currentPage)
-		$("form").attr("method" , "POST").attr("action" , "/product/listProduct").submit();
+		document.getElementById("currentPage").value = currentPage;
+	   	document.detailForm.submit();		
 	}
+	// ▼▼▼ [추가] jQuery UI Autocomplete 스크립트 ▼▼▼ //
+    $(function() {
+        // 검색 입력창에 자동완성 기능 적용
+        $("#searchKeyword").autocomplete({
+            // source: 자동완성 데이터를 가져올 서버 URL
+            source: "/product/json/getProductNameList",
+            // minLength: 자동완성이 시작될 최소 글자 수
+            minLength: 1,
+            // select: 목록에서 항목을 선택했을 때 실행될 콜백 함수
+            select: function(event, ui) {
+                // 선택된 항목의 값(ui.item.value)을 input에 직접 설정
+                $(this).val(ui.item.value);
+            }
+        });
 
-  </script>
+        // "상품명"이 선택되었을 때만 자동완성 활성화
+        $('select[name="searchCondition"]').on('change', function() {
+            if ($(this).val() === '1') { // 1: 상품명
+                $("#searchKeyword").autocomplete("enable");
+            } else {
+                $("#searchKeyword").autocomplete("disable");
+            }
+        }).trigger('change'); // 페이지 로드 시 초기 상태 적용
+    });
+    // ▲▲▲ [추가] jQuery UI Autocomplete 스크립트 ▲▲▲ //
+</script>
+
 </head>
 
 <body bgcolor="#ffffff" text="#000000">
+
 <div style="width:98%; margin-left:10px;">
 
-  <form name="detailForm" action="${pageContext.request.contextPath}/product/listProduct" method="post">
+<form name="detailForm" action="${pageContext.request.contextPath}/product/listProduct" method="post">
 
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
-      <tr>
-        <td colspan="11">
-          전체 ${resultPage.totalCount} 건수, 현재 ${resultPage.currentPage} 페이지
-        </td>
-      </tr>
-      <tr>
-        <td class="ct_list_b" width="100">No</td>
-        <td class="ct_line02"></td>
-        <td class="ct_list_b" width="150">상품명</td>
-        <td class="ct_line02"></td>
-        <td class="ct_list_b" width="150">가격</td>
-        <td class="ct_line02"></td>
-        <td class="ct_list_b" width="700">등록일</td>
-        <td class="ct_line02"></td>
-        <td class="ct_list_b">상태</td>
-      </tr>
-      <tr><td colspan="11" bgcolor="808285" height="1"></td></tr>
 
-      <c:set var="i" value="0" />
-      <c:forEach var="product" items="${list}">
-        <c:set var="i" value="${i + 1}" />
+<table width="100%" height="37" border="0" cellpadding="0"	cellspacing="0">
+	<tr>
+		<td width="15" height="37">
+			<img src="/images/ct_ttl_img01.gif" width="15" height="37" />
+		</td>
+		<td background="/images/ct_ttl_img02.gif" width="100%" style="padding-left:10px;">
+			<table width="100%" border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="93%" class="ct_ttl01">${title}</td>
+				</tr>
+			</table>
+		</td>
+		<td width="12" height="37">
+			<img src="/images/ct_ttl_img03.gif" width="12" height="37"/>
+		</td>
+	</tr>
+</table>
 
-        <tr class="ct_list_pop">
-          <td align="center">${i}</td>
-          <td></td>
-          <td align="left">
-            <span class="product-link"
-                  data-prodno="${product.prodNo}"
-                  style="cursor:pointer;" id="${product.prodNo}">
-              ${product.prodName}
-            </span>
-          </td>
-          <td></td>
-          <td align="left">${product.price}</td>
-          <td></td>
-          <td align="left">${product.regDate}</td>
-          <td></td>
-          <td align="left">${product.proTranCode}</td>
-        </tr>
-        <tr><td colspan="11" bgcolor="D6D7D6" height="1"></td></tr>
-        <tr id="${product.prodNo}-detail" class="product-detail" style="display:none;">
-          <td colspan="11" width="100%">
-            </td>
-        </tr>
-      </c:forEach> </table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
+	<tr>
+		<td align="right">
+			<select name="searchCondition" class="ct_input_g" style="width:80px">
+			<%-- /////////////////////// EL / JSTL 적용으로 주석 처리 ////////////////////////
+				<option value="0" <%= (searchCondition.equals("0") ? "selected" : "")%>>회원ID</option>
+				<option value="1" <%= (searchCondition.equals("1") ? "selected" : "")%>>회원명</option>
+				/////////////////////// EL / JSTL 적용으로 주석 처리 //////////////////////// --%>
+				<option value="0"  ${ ! empty search.searchCondition && search.searchCondition==0 ? "selected" : "" }>상품NO</option>
+				<option value="1"  ${ ! empty search.searchCondition && search.searchCondition==1 ? "selected" : "" }>상품명</option>
+			</select>
+			<%--<input type="text" name="searchKeyword" value="<%= searchKeyword %>"  class="ct_input_g" style="width:200px; height:14px" >--%>
+			<input type="text" id="searchKeyword" name="searchKeyword"  
+						value="${! empty search.searchKeyword ? search.searchKeyword : ""}"  
+						class="ct_input_g" style="width:200px; height:20px" > 
+		</td>
+		<td align="right" width="70">
+			<table border="0" cellspacing="0" cellpadding="0">
+				<tr>
+					<td width="17" height="23"><img src="/images/ct_btnbg01.gif" width="17" height="23"></td>
+					<td background="/images/ct_btnbg02.gif" class="ct_btn01" style="padding-top:3px;">
+						<a href="javascript:fncGetUserList('1');">검색</a>
+					</td>
+					<td width="14" height="23"><img src="/images/ct_btnbg03.gif" width="14" height="23"></td>
+				</tr>
+			</table>
+		</td>
+	</tr>
+</table>
 
-    <table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
-      <tr>
-        <td align="center">
-          <input type="hidden" id="currentPage" name="currentPage" value="1" />
-          <jsp:include page="../common/pageNavigator.jsp" />
-        </td>
-      </tr>
-    </table>
+<table width="100%" border="0" cellspacing="0" cellpadding="0" style="margin-top:10px;">
+	<tr>
+		<%--
+		<td colspan="11" >
+			전체  <%= resultPage.getTotalCount() %> 건수, 현재 <%= resultPage.getCurrentPage() %>  페이 지
+		</td>
+		 --%>
+		<td colspan="11" >
+			전체  ${resultPage.totalCount } 건수, 현재 ${resultPage.currentPage}  페이지
+		</td>
+	</tr>
+	<tr>
+		<td class="ct_list_b" width="100">No</td>
+		<td class="ct_line02"></td>
+		<td class="ct_list_b" width="150">상품명</td>
+		<td class="ct_line02"></td>
+		<td class="ct_list_b" width="150">가격</td>
+		<td class="ct_line02"></td>
+		<td class="ct_list_b"width="700">등록일</td>		
+		<td class="ct_line02"></td>
+		<td class="ct_list_b">상태</td>
+	</tr>
+	<tr>
+		<td colspan="11" bgcolor="808285" height="1"></td>
+	</tr>
+	<%-- /////////////////////// EL / JSTL 적용으로 주석 처리 ////////////////////////
+	<%
+		for(int i=0; i<list.size(); i++) {
+			Product vo = list.get(i);
+	%>
+	<tr class="ct_list_pop">
+		<td align="center"><%= i + 1 %></td>
+		<td></td>
+		<td align="left"><a href="/getProduct.do?prodNo=<%=vo.getProdNo() %>"><%= vo.getProdNo() %></a></td>
+		<td></td>
+		<td align="left"><%= vo.getProdName() %></td>
+		<td></td>
+		<td align="left"><%= vo.getEmail() %>
+		</td>		
+	</tr>
+	<tr>
+		<td colspan="11" bgcolor="D6D7D6" height="1"></td>
+	</tr>
+	<% } %>/////////////////////// EL / JSTL 적용으로 주석 처리 //////////////////////// --%>
+	
+	<!-- ➊ 루프 인덱스를 수동 증가시키기 위한 초기값 설정 -->
+	<c:set var="i" value="0" />
+	<!-- ➋ forEach 루프를 통해 list 반복 -->
+	<c:forEach var="product" items="${list}">
+		<!-- ➌ 인덱스 증가 (스크립틀릿에서 i++) 대체) -->
+		<c:set var="i" value="${ i+1 }" />
+		<!-- 🔁 아래는 link 변수를 조건에 따라 설정하는 부분 (기존 if-else 분기문 대체) -->
+		<!-- ✅ 수정된 부분 시작 -->
+			<c:choose>
+				<c:when test="${menuParam eq 'manage'}">
+					<c:set var="link" value="/product/updateProduct?prodNo=${product.prodNo}" />
+				</c:when>
+				<c:when test="${product.proTranCode eq '재고없음'}">
+					<c:set var="link" value="" />
+				</c:when>
+				<c:otherwise>
+					<c:set var="link" value="/product/getProduct?prodNo=${product.prodNo}" />
+				</c:otherwise>
+			</c:choose>
+			<!-- ✅ 수정된 부분 끝 -->
+		
+		<tr class="ct_list_pop">
+			<td align="center">${ i }</td>
+			<td></td>
+			<!-- <td align="left"><a href="/product/getProduct?prodNo=${product.prodNo}">${product.prodNo}</a></td> -->
+			<td align="left">
+            <c:choose>
+                <c:when test="${empty link}"> ${product.prodName}
+                </c:when>
+                <c:otherwise>  <a href="${link}">${product.prodName}</a>
+                </c:otherwise>
+            </c:choose>
+			</td>
+			<td></td>
+			<td align="left">${product.price}</td>
+			<td></td>
+			<td align="left">${product.regDate}</td>		
+			<td></td>
+			<td align="left">${product.proTranCode}</td>
+		</tr>
+		<tr>
+		<td colspan="11" bgcolor="D6D7D6" height="1"></td>
+		</tr>
+	</c:forEach>
+</table>
 
-  </form>
 
+<!-- PageNavigation Start... -->
+<table width="100%" border="0" cellspacing="0" cellpadding="0"	style="margin-top:10px;">
+	<tr>
+		<td align="center">
+		   <input type="hidden" id="currentPage" name="currentPage" value="1"/>
+		   		<jsp:include page="../common/pageNavigator.jsp"/>	
+	<%-- /////////////////////// EL / JSTL 적용으로 주석 처리 //////////////////////// 		   
+	<% if( resultPage.getCurrentPage() <= resultPage.getPageUnit() ){ %>
+			◀ 이전
+	<% }else{ %>
+			<a href="javascript:fncGetProductList('<%=resultPage.getCurrentPage()-1%>')">◀ 이전</a>
+	<% } %>
+
+	<%	for(int i=resultPage.getBeginUnitPage();i<= resultPage.getEndUnitPage() ;i++){	%>
+			<a href="javascript:fncGetProductList('<%=i %>');"><%=i %></a>
+	<% 	}  %>
+	
+	<% if( resultPage.getEndUnitPage() >= resultPage.getMaxPage() ){ %>
+			이후 ▶
+	<% }else{ %>
+			<a href="javascript:fncGetProductList('<%=resultPage.getEndUnitPage()+1%>')">이후 ▶</a>
+	<% } %>
+	 /////////////////////// EL / JSTL 적용으로 주석 처리 //////////////////////// --%>
+	
+
+			
+    	</td>
+	</tr>
+</table>
+<!-- PageNavigation End... -->
+
+</form>
 </div>
+
 </body>
 </html>

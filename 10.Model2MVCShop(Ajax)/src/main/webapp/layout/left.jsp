@@ -39,31 +39,37 @@
 			
 			// 판매상품등록
 			$(".Depth03:contains('판매상품등록')").on("click", function () {
+				console.log(`[DEBUG] 메뉴 클릭됨: 판매상품등록 `);
 				$(window.parent.frames["rightFrame"].document.location).attr("href", "/product/addProductView.jsp");
 			});
 
 			// 판매상품관리
 			$(".Depth03:contains('판매상품관리')").on("click", function () {
+				console.log(`[DEBUG] 메뉴 클릭됨: 판매상품관리`);
 				$(window.parent.frames["rightFrame"].document.location).attr("href", "/product/listProduct?menu=manage");
 			});
 
 			// 상품검색
 			$(".Depth03:contains('상 품 검 색')").on("click", function () {
+				console.log(`[DEBUG] 메뉴 클릭됨: 상 품 검 색`);
 				$(window.parent.frames["rightFrame"].document.location).attr("href", "/product/listProduct?menu=search");
 			});
 			
 			// 상품검색 무한스크롤
 			$(".Depth03:contains('상품무한스크롤')").on("click", function () {
+				console.log(`[DEBUG] 메뉴 클릭됨: 상품무한스크롤`);
 				$(window.parent.frames["rightFrame"].document.location).attr("href", "/product/listProductScroll?menu=search");
 			});
 
 			// 구매이력조회
 			$(".Depth03:contains('구매이력조회')").on("click", function () {
+				console.log(`[DEBUG] 메뉴 클릭됨: 구매이력조회`);
 				$(window.parent.frames["rightFrame"].document.location).attr("href", "/purchase/listPurchase");
 			});
 
 			// 최근 본 상품
 			$(".Depth03:contains('최근 본 상품')").on("click", function () {
+				console.log(`[DEBUG] 메뉴 클릭됨: 최근 본 상품`);
 				window.open("/history.jsp", "popWin", "left=300, top=200, width=300, height=200, marginwidth=0, marginheight=0, scrollbars=no, scrolling=no, menubar=no, resizable=no");
 			});
 		});	

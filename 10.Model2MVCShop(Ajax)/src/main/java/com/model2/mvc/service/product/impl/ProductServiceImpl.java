@@ -58,4 +58,10 @@ public class ProductServiceImpl implements ProductService{
 	public int getTotalCount(Search search) throws Exception {
 		return productDao.getTotalCount(search);
 	}
+	
+	// [추가] 자동완성용 상품명 목록 조회 구현
+    @Override
+    public List<String> getProductNameList(String keyword) throws Exception {
+        return productDao.getProductNameList(keyword);
+    }
 }

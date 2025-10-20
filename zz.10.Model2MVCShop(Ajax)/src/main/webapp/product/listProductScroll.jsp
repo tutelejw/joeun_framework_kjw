@@ -22,124 +22,47 @@
   }
   </style>
 
-  <script type="text/javascript">
-    // JSP 변수 menuParam을 JS 변수로 전달
-    var menuParam = '${menuParam}';
+<script type="text/javascript">
+  // 변수 선언
+  var currentPage = ${resultPage.currentPage}; // 현재 페이지
+  var totalCount = ${resultPage.totalCount};   // 전체 상품 수
+  var pageSize = ${search.pageSize};           // 페이지당 상품 수
+  var loading = false;                          // 중복 요청 방지
+  var isEnd = false;                            // 마지막 페이지 여부
 
-    $(document).ready(function () {
+  // 초기 로딩 시 최대 재귀 호출 횟수
+  var maxInitialLoadAttempts = 3;
+  var initialLoadCount = 0;
 
-      // 1. 상품명 빨간색으로 스타일 적용
-      $(".product-link").css("color", "red");
+  // JSP 변수 menuParam을 JS 변수로 전달
+  var menuParam = '${menuParam}';
 
-      // 2. 상품명 클릭 이벤트
-      $(document).on('click', '.product-link', function () {
-        const prodNo = $(this).data('prodno');  // 상품번호
-        const prodName = $(this).text().trim(); // 상품명
+  // 초기 자동 로딩 함수 (재귀 호출 제한)
+  function checkAndLoadMore() {
+    if (isEnd || loading) return;
 
-        if (!prodNo) {
-          alert("상품번호 정보가 없습니다!");
-          return;
-        }
+    if ($(document).height() <= $(window).height()) {
+      if (initialLoadCount < maxInitialLoadAttempts) {
+        initialLoadCount++;
+        loadNextPage().then(() => {
+          checkAndLoadMore();
+        });
+      }
+    }
+  }
 
-        // 3. 클릭된 상품 상세 정보가 이미 열려 있는지 확인
-        var $currentDetailRow = $("#" + prodNo + "-detail");  // 해당 상품번호에 대한 상세 정보 영역 (<tr>)
-        
-        // **수정된 부분:** currentDetail.is(":visible") 대신 $currentDetailRow.is(":visible") 사용
-        if ($currentDetailRow.is(":visible")) {
-          // 이미 열려 있으면, 상세 정보 숨기기
-          $currentDetailRow.hide();
-        } else {
-          // 4. AJAX 요청으로 상품 상세 정보 받아오기
-          $.ajax({
-            url: "/product/json/getProduct/" + prodNo,  // 상품 번호로 상세 정보 요청
-            method: "GET",
-            dataType: "json",
-            headers: {
-              "Accept": "application/json",
-              "Content-Type": "application/json"
-            },
-            success: function (JSONData) {
-              // 5. 받은 데이터를 HTML로 동적으로 삽입
-              if (JSONData) {
-                
-                // 줄 바꿈 <br/> 제거하고 | 구분자를 사용하여 한 줄로 표시
-                var detailText = "상품명: " + JSONData.prodName + "<br/>" 
-                    + "  가격 : " + JSONData.price  + "<br/>"
-                    + "  상태 : " + JSONData.proTranCode  + "<br/>"
-                    + "  등록일 : " + JSONData.regDateString + "<br/>";
-
-                // 줄 바꿈 방지를 위해 detail-content 클래스를 가진 <div>로 감쌉니다.
-                var displayValue = '<div class="detail-content">' + detailText + '</div>';
-
-
-                // 6. 모든 다른 상세 정보를 숨김 (열려있는 다른 상세 정보들을 닫음)
-                $(".product-detail").hide();
-
-                // 7. 해당 상품에 대한 상세 정보 표시
-                // **수정된 부분:** <tr>과 <td>의 처리를 명확히 분리
-                var $detailRowToOpen = $("#" + prodNo +"-detail");
-                
-                // <tr> 내부의 <td>에 HTML 삽입
-                $detailRowToOpen.find("td").html(displayValue);
-                
-                // <tr> 요소 자체를 보이게 처리
-                $detailRowToOpen.show();
-                
-              } else {
-                alert("상품 정보를 불러오는 데 실패했습니다.");
-              }
-            },
-            error: function () {
-              alert("서버에서 상품 정보를 불러오는 데 오류가 발생했습니다.");
-            }
-          });
-        }
-      });
-
-      // 8. 검색 버튼 클릭 이벤트
-      $('#btnSearch').on('click', function () {
-        $('input[name="currentPage"]').val('1');
-        $('form[name="detailForm"]').submit();
-      });
-
-    });
-    
- // ============ 무한 스크롤 구현 시작 (개선된 코드) ==============
-    var currentPage = ${resultPage.currentPage}; // 현재 페이지
-    var totalCount = ${resultPage.totalCount};   // 전체 상품 수
-    var pageSize = ${search.pageSize};           // 페이지당 상품 수
-    var loading = false;                         // 중복 요청 방지
-    var isEnd = false;                           // 마지막 페이지 여부
-
-    // Throttle 처리용 타이머 변수
-    let throttleTimer = null;
-
-    // 스크롤 이벤트 감지 (Throttle 적용)
-    $(window).on('scroll', function () {
-      if (throttleTimer) return;
-
-      throttleTimer = setTimeout(function () {
-        throttleTimer = null;
-
-        if (loading || isEnd) return;
-
-        // 하단 근접 시점
-/*         if ($(window).scrollTop() + $(window).height() >= $(document).height() - 150) { */
-        if ($(window).scrollTop() + $(window).height() >= $(document).height() - 150) {
-          loadNextPage();
-        }
-      }, 300); // 300ms마다 한 번씩만 실행
-    });
-
-    function loadNextPage() {
+  // 다음 페이지 데이터 불러오기 (Promise 반환)
+  function loadNextPage() {
+    return new Promise(function(resolve, reject) {
       loading = true;
       currentPage++;
 
-      // 마지막 페이지 계산
       var maxPage = Math.ceil(totalCount / pageSize);
       if (currentPage > maxPage) {
         isEnd = true;
         $("#endMessage").show();
+        loading = false;
+        resolve();
         return;
       }
 
@@ -152,12 +75,11 @@
         },
         success: function (html) {
           var newRows = $(html).find("table").first().find("tr.ct_list_pop, tr.product-detail, tr[bgcolor='D6D7D6']");
-          
+
           if (newRows.length === 0) {
             isEnd = true;
             $("#endMessage").show();
           } else {
-            // 번호 보정 (No 열)
             var currentCount = $("tr.ct_list_pop").length;
             var i = 1;
             newRows.each(function () {
@@ -175,20 +97,105 @@
         },
         complete: function () {
           loading = false;
+          resolve();
         }
       });
-    }
+    });
+  }
 
-    // ============ 무한 스크롤 구현 끝 ==============
+  $(document).ready(function () {
+    // 1. 상품명 빨간색 스타일
+    $(".product-link").css("color", "red");
 
-    
-	// 검색 / page 두가지 경우 모두 Form 전송을 위해 JavaScrpt 이용  
-	function fncGetUserList(currentPage) {
-		$("#currentPage").val(currentPage)
-		$("form").attr("method" , "POST").attr("action" , "/product/listProductScroll").submit();
-	}
+    // 2. 상품명 클릭 이벤트
+    $(document).on('click', '.product-link', function () {
+      const prodNo = $(this).data('prodno');  // 상품번호
+      const prodName = $(this).text().trim(); // 상품명
 
-  </script>
+      if (!prodNo) {
+        alert("상품번호 정보가 없습니다!");
+        return;
+      }
+
+      var $currentDetailRow = $("#" + prodNo + "-detail");
+
+      if ($currentDetailRow.is(":visible")) {
+        $currentDetailRow.hide();
+      } else {
+        $.ajax({
+          url: "/product/json/getProduct/" + prodNo,
+          method: "GET",
+          dataType: "json",
+          headers: {
+            "Accept": "application/json",
+            "Content-Type": "application/json"
+          },
+          success: function (JSONData) {
+            if (JSONData) {
+              var detailText = "상품명: " + JSONData.prodName + "<br/>" 
+                + "  가격 : " + JSONData.price  + "<br/>"
+                + "  상태 : " + JSONData.proTranCode  + "<br/>"
+                + "  등록일 : " + JSONData.regDateString + "<br/>";
+
+              var displayValue = '<div class="detail-content">' + detailText + '</div>';
+
+              $(".product-detail").hide();
+
+              var $detailRowToOpen = $("#" + prodNo +"-detail");
+              $detailRowToOpen.find("td").html(displayValue);
+              $detailRowToOpen.show();
+
+            } else {
+              alert("상품 정보를 불러오는 데 실패했습니다.");
+            }
+          },
+          error: function () {
+            alert("서버에서 상품 정보를 불러오는 데 오류가 발생했습니다.");
+          }
+        });
+      }
+
+      // 클릭 시점에도 혹시 부족하면 자동 로딩 시도 (안정성용)
+      checkAndLoadMore();
+    });
+
+    // 8. 검색 버튼 클릭 이벤트
+    $('#btnSearch').on('click', function () {
+      $('input[name="currentPage"]').val('1');
+      $('form[name="detailForm"]').submit();
+    });
+
+    // 초기 로딩 시 스크롤 부족하면 최대 3번만 자동 로딩
+    checkAndLoadMore();
+  });
+
+  // Throttle 처리용 타이머 변수
+  let throttleTimer = null;
+
+  // 스크롤 이벤트 감지 (Throttle 적용)
+  $(window).on('scroll', function () {
+    if (throttleTimer) return;
+
+    throttleTimer = setTimeout(function () {
+      throttleTimer = null;
+
+      if (loading || isEnd) return;
+
+      if ($(window).scrollTop() + $(window).height() >= $(document).height() - 150) {
+        loadNextPage();
+      }
+    }, 300);
+  });
+
+  // 검색 / 페이지 전환용 함수
+  function fncGetUserList(currentPage) {
+    $("#currentPage").val(currentPage)
+    $("form").attr("method", "POST").attr("action", "/product/listProductScroll").submit();
+  }
+</script>
+
+
+
 </head>
 
 <body bgcolor="#ffffff" text="#000000">
