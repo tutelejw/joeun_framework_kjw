@@ -1,0 +1,73 @@
+<?xml version="1.0" encoding="UTF-8"?>
+
+<beans xmlns="http://www.springframework.org/schema/beans"
+       xmlns:context="http://www.springframework.org/schema/context"
+       xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
+       xmlns:mvc="http://www.springframework.org/schema/mvc"
+       xsi:schemaLocation="
+           http://www.springframework.org/schema/beans 
+           http://www.springframework.org/schema/beans/spring-beans.xsd
+           http://www.springframework.org/schema/context 
+           http://www.springframework.org/schema/context/spring-context.xsd
+           http://www.springframework.org/schema/mvc 
+           http://www.springframework.org/schema/mvc/spring-mvc.xsd">  <!-- ✅ mvc 스키마 경로 추가 -->
+
+    <!-- :: 공통적인 사항을 설정한 common-servlet.xml 사용. -->
+
+    <!-- ㅇ 어노테이션 기반 :: Spring Framework 사용.
+         ㅇ @Controller annotation 선언된 Bean 만 Wiring
+         ㅇ @Service / @Repository  annotation 선언된 Bean 은 Scan 제외 -->
+    <context:component-scan base-package="spring.web">
+        <context:include-filter type="annotation"
+                                expression="org.springframework.stereotype.Controller"/>
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Service"/>
+        <context:exclude-filter type="annotation"
+                                expression="org.springframework.stereotype.Repository"/>
+    </context:component-scan>
+
+   <!-- ✅ JSON 변환(@RestController, @RequestBody 등)을 위한 필수 설정 -->
+    <mvc:annotation-driven />
+
+    <!-- ✅ 인터셉터 등록 -->
+    <mvc:interceptors>
+        <mvc:interceptor>
+            <!-- 모든 요청에 대해 적용 -->
+            <mvc:mapping path="/**"/>
+            <bean class="spring.common.web.LogonCheckInterceptor"/>
+        </mvc:interceptor>
+    </mvc:interceptors>
+
+    <!-- ✅ ViewResolver 설정 -->
+    <bean id="viewResolver"
+          class="org.springframework.web.servlet.view.InternalResourceViewResolver"/>
+
+    <!-- ✅ 예외 처리용 Resolver 설정 -->
+    <bean id="exceptionResolver"
+          class="org.springframework.web.servlet.handler.SimpleMappingExceptionResolver">
+
+        <property name="exceptionMappings">
+            <props>
+                <prop key="java.lang.NullPointerException">/common/nullError.jsp</prop>
+                <prop key="java.lang.NumberFormatException">/common/numberFormatError.jsp</prop>
+            </props>
+        </property>
+
+        <property name="defaultErrorView" value="/common/error.jsp"/>
+    </bean>
+
+    <!-- 기존 수동 HandlerMapping과 인터셉터는 제거 또는 주석처리 -->
+    <!--
+    <bean class="org.springframework.web.servlet.mvc.method.annotation.RequestMappingHandlerMapping">
+        <property name="order" value="0"/>
+        <property name="interceptors">
+            <list>
+                <ref bean="logonCheckInterceptor"/>
+            </list>
+        </property>
+    </bean>
+
+    <bean id="logonCheckInterceptor" class="spring.common.web.LogonCheckInterceptor"/>
+    -->
+
+</beans>
