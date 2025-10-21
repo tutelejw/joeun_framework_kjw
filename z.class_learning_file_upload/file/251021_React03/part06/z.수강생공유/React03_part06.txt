@@ -1,0 +1,27 @@
+
+===========================
+cd c:\workspaceReact
+
+md 02react-router-dom
+
+cd 02react-router-dom
+
+create-react-app .
+
+npm start
+
+
+
+===========================
+www.reactrouter.com  
+==> 버전 확인.
+
+npm install react-router-dom
+==> package.json ==> 7.x 설치 확인.
+
+npm uninstall react-router-dom
+==> package.json ==> 7.x 삭제 확인.
+
+==> 특정버전 설치 확인...
+npm install react-router-dom@5
+==> package.json ==> 5.x 설치 확인

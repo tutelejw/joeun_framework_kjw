@@ -1,0 +1,21 @@
+
+===========================
+www.axios-http.com
+
+
+>>>>>>> axios 설치
+
+cd c:\workspaceReact\01react-app
+
+npm install axios
+==> package.json 에 설치 정보 dependencies 확인.
+
+
+
+
+>>>>>>> jquery 설치
+
+npm install jquery
+==> package.json 에 설치 정보 dependencies 확인.
+
+==> import $ from 'jquery'

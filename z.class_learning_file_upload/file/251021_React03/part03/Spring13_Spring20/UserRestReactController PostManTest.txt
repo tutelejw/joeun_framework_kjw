@@ -1,0 +1,40 @@
+
+0. Postman : RestFul , API Test
+: postman.com
+: Sign Up for Free 
+: Download And install 
+: run And Continue without an accout
+: Open Lightweight API Client
+
+
+
+1. UserRestController.getUser()  : GET
+
+http://127.0.0.1:8080/Spring20/app/userAPI/getUser?name=홍길동&age=10
+
+
+
+2. UserRestController.getUserMore()  : GET
+
+http://127.0.0.1:8080/Spring20/app/userAPI/getUserMore/user01?name=홍길동&age=10
+
+
+
+3. UserRestController.getUser()  : POST
+
+http://127.0.0.1:8080/Spring20/app/userAPI/getUser
+
+=> header  >>  Content-Type :  application/json
+
+=> body >> row
+{"userId":"ZZZ","userName":"홍길동","age":"1111"}
+
+
+
+2. UserRestController.getUserMore()  : POST
+
+http://127.0.0.1:8080/Spring20/app/userAPI/getUserMore/user01
+
+=> header  >>  Content-Type :  application/json
+=> body >> row
+{"userId":"ZZZ","userName":"홍길동","age":"1111"}
