@@ -28,7 +28,7 @@ public class UserController {
 		System.out.println("==> UserController default Constructor call.............");
 	}
 
-	// 단순 navigation
+	// 단순 navigation 
 	// logon
 	@RequestMapping("/logon")
 	public String logon(Model model) {
