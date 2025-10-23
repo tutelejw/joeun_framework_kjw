@@ -1,0 +1,17 @@
+
+===========================
+cd c:\workspaceReact\02react-router-dom
+
+==> react-bootstrap.github.io
+
+npm install react-bootstrap 
+npm install bootstrap
+
+==> package.json 확인
+
+
+==> react-bootstrap.github.io / getting Strart...
+{
+  /* The following line can be included in your src/index.js or App.js file */
+}
+import 'bootstrap/dist/css/bootstrap.min.css';

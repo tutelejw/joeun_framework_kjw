@@ -1,0 +1,31 @@
+
+0. Postman : RestFul , API Test
+: postman.com
+: Sign Up for Free 
+: Download And install 
+: run And Continue without an accout
+: Open Lightweight API Client
+
+==> 설치 완료 상태
+========================================
+
+
+
+1. UserRestController.login() : POST
+
+http://127.0.0.1:8080/Spring20/app/userAPI/login
+=> header  >>  Content-Type :  application/json
+=> body >> row
+{"userId":"user01","password":"user01"}
+
+
+
+2. UserRestController.checkLogin() : Get
+
+http://127.0.0.1:8080/Spring20/app/userAPI/checkLogin
+
+
+
+3. UserRestController.logout() : POST
+
+http://127.0.0.1:8080/Spring20/app/userAPI/logout

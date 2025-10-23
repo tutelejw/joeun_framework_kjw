@@ -1,0 +1,36 @@
+
+===========================
+cd c:\workspaceReact
+
+md react-myweb01
+cd react-myweb01
+
+create-react-app .
+
+dir
+
+npm start
+==> 브라우저 확인 
+==> http://ip:3000
+
+============================
+==> 필요 모듈, lib 설치
+npm install axios 
+npm install jquery
+npm install react-router-dom@5
+npm install react-bootstrap
+npm install bootstrap
+
+======================================
+==> jquery / bootstrap 사용은...
+======================================
+==>{
+==>   /* The following line can be included in your src/index.js or App.js file */
+==>}
+import 'bootstrap/dist/css/bootstrap.min.css';
+
+==> jquery 사용은....
+import $ from 'jquery'
+======================================
+
+VSCode 실행후 package.json 각각의 모듈 설치 확인.
