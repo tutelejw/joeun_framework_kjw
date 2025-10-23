@@ -40,7 +40,7 @@ public class UserRestController {
 		returnUser.setUserName("GET:이순신");
 		returnUser.setAge(100);
 		System.out.println(returnUser);
-		
+		Thread.sleep(3000);
 		return returnUser;
 	}
 
